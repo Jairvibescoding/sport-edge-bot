@@ -310,7 +310,8 @@ def handle_preguntar(chat_id, pregunta):
     """Responde preguntas con contexto"""
     pregunta = pregunta.lower()
     
-    if "yamamoto" in pregunta:
+    # YAMAMOTO
+    if "yamamoto" in pregunta or "pick 1" in pregunta or "primera apuesta" in pregunta:
         bet = MEMORY['apuestas_hoy']['picks'][1]
         msg = f"""
 ⚾ <b>YAMAMOTO O7.5 KS</b>
@@ -335,7 +336,8 @@ Yamamoto tiene K/9 de 8.5+ y enfrenta a un equipo con K% alto. La línea de 7.5 
         """
         send_message(chat_id, msg)
     
-    elif "misiorowski" in pregunta:
+    # MISIOROWSKI
+    elif "misiorowski" in pregunta or "pick 2" in pregunta or "segunda apuesta" in pregunta or "brewers" in pregunta:
         bet = MEMORY['apuestas_hoy']['picks'][2]
         msg = f"""
 ⚾ <b>MISIOROWSKI O8.5 KS</b>
@@ -359,7 +361,8 @@ Misiorowski es un pitcher élite con K/9 de 13+. Aunque la línea de 8.5 es alta
         """
         send_message(chat_id, msg)
     
-    elif "stephens" in pregunta:
+    # STEPHENS
+    elif "stephens" in pregunta or "pick 3" in pregunta or "tercera apuesta" in pregunta or "tenis" in pregunta:
         bet = MEMORY['apuestas_hoy']['picks'][3]
         msg = f"""
 🎾 <b>STEPHENS +2.5</b>
@@ -384,7 +387,8 @@ Stephens es underdog pero tiene experiencia en Grand Slams. El handicap de +2.5 
         """
         send_message(chat_id, msg)
     
-    elif "sanchez" in pregunta:
+    # SANCHEZ
+    elif "sanchez" in pregunta or "pick 4" in pregunta or "cuarta apuesta" in pregunta or "phillies" in pregunta:
         bet = MEMORY['apuestas_hoy']['picks'][4]
         msg = f"""
 ⚾ <b>SÁNCHEZ GANARÁ</b>
@@ -408,7 +412,8 @@ Phillies son favoritos claros con Sánchez (ERA 2.79) vs Kent (ERA 6.59). El win
         """
         send_message(chat_id, msg)
     
-    elif "sandoval" in pregunta:
+    # SANDOVAL
+    elif "sandoval" in pregunta or "pick 5" in pregunta or "quinta apuesta" in pregunta or "red sox" in pregunta:
         bet = MEMORY['apuestas_hoy']['picks'][5]
         msg = f"""
 ⚾ <b>SANDOVAL O5.5 KS</b>
@@ -741,8 +746,27 @@ def handle_chiste(chat_id):
 def handle_default(chat_id, text):
     """Respuesta por defecto - busca en memoria"""
     # Intentar encontrar algo relevante en la memoria
+    text_lower = text.lower()
+    
+    # Buscar en picks
     for bet_id, bet in MEMORY['apuestas_hoy']['picks'].items():
-        if any(word in text for word in [bet['pick'].split()[0].lower(), bet['event'].split()[0].lower()]):
+        pick_words = bet['pick'].lower().split()
+        event_words = bet['event'].lower().split()
+        
+        for word in pick_words:
+            if len(word) > 3 and word in text_lower:
+                handle_preguntar(chat_id, text)
+                return
+        
+        for word in event_words:
+            if len(word) > 3 and word in text_lower:
+                handle_preguntar(chat_id, text)
+                return
+    
+    # Buscar temas generales
+    temas = ["poisson", "kelly", "ev", "estrategia", "bankroll", "modelo", "apuesta", "apostar", "por que", "porque", "razon", "razón"]
+    for tema in temas:
+        if tema in text_lower:
             handle_preguntar(chat_id, text)
             return
     
