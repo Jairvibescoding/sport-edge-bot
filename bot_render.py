@@ -38,7 +38,7 @@ MEMORY = {
     
     "proyecto": {
         "nombre": "Sports Edge",
-        "ubicacion": r"C:\Users\jruiz\sports_analyzer",
+        "ubicacion": "C:/Users/jruiz/sports_analyzer",
         "stack": ["Python", "Flask", "Poisson Model", "Telegram Bot"],
         "api_football": "b9b358f4ca134a29a326a77926eeee17",
         "api_odds": "af560452f738537eeb2be3faec31a73f",
@@ -147,7 +147,7 @@ MEMORY = {
 RESUMEN DE LA CONVERSACION - 15 Septiembre 2026:
 
 1. INICIO: Jair queria analisis de apuestas deportivas con modelo Poisson
-2. PROYECTO: Se creo Sports Edge en C:\Users\jruiz\sports_analyzer
+2. PROYECTO: Se creo Sports Edge en C:/Users/jruiz/sports_analyzer
 3. MODELO: Poisson mejorado con form scraper, head2head, home advantage
 4. API: the-odds-api.com agotada (500/500 requests)
 5. ESTRATEGIA: Disciplinas: MLB Props, MLB Totales, Tenis WTA
