@@ -18,7 +18,7 @@ from flask import Flask, request, jsonify
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 # Telegram
-TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '8563502125:AAGQ9IOEAfPgLlKkDoUeIkJ5_3llVKvWbCA')
+TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '8563502125:AAFyhneNu2iBjQbUmE_bNGtFdYi8nNHzfgo')
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
 # ============================================
