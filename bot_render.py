@@ -892,17 +892,161 @@ def setup_webhook():
         print(f"Error configurando webhook: {e}")
 
 # ============================================
+# MONITOR 24/7 - VERIFICA RESULTADOS
+# ============================================
+
+def monitor_loop():
+    """Loop del monitor - corre en background"""
+    print("[MONITOR] Iniciando monitor 24/7...")
+    
+    while True:
+        try:
+            now = datetime.now().strftime("%H:%M:%S")
+            print(f"[MONITOR] Verificando... {now}")
+            
+            games = get_mlb_games()
+            games_found = 0
+            
+            for bet_id, bet in MEMORY["apuestas_hoy"]["picks"].items():
+                if bet["estado"] != "pending":
+                    continue
+                if bet.get("sport") == "tennis":
+                    continue
+                
+                player = bet.get("player", "")
+                
+                for game in games:
+                    is_home = player.lower() in game["home_pitcher"].lower()
+                    is_away = player.lower() in game["away_pitcher"].lower()
+                    
+                    if not is_home and not is_away:
+                        continue
+                    
+                    game_id = game["id"]
+                    status = game["status"]
+                    key = f"{bet_id}_{game_id}"
+                    games_found += 1
+                    
+                    # INICIO DEL PARTIDO
+                    if status == "In Progress" and key + "_start" not in MONITOR_STATUS["games_notified"]:
+                        ks = get_pitcher_ks(player, game_id)
+                        msg = f"""
+⚾ <b>PARTIDO INICIADO</b>
+
+{game['away']} @ {game['home']}
+🎯 {bet['pick']}
+📈 {player}: {ks} Ks
+⏰ Esperando resultado...
+                        """
+                        send_message(CHAT_ID, msg)
+                        MONITOR_STATUS["games_notified"][key + "_start"] = True
+                        print(f"[MONITOR] INICIO: {bet['event']}")
+                    
+                    # MITAD (5ta entrada)
+                    elif status == "In Progress" and game["inning"] == 5 and key + "_mid" not in MONITOR_STATUS["games_notified"]:
+                        ks = get_pitcher_ks(player, game_id)
+                        line = bet["line"]
+                        
+                        if "O" in bet["pick"]:
+                            status_text = f"{'WINNING' if ks > line else 'NEED MORE'} {ks}/{line} Ks"
+                        else:
+                            status_text = f"{ks} Ks"
+                        
+                        msg = f"""
+📊 <b>MITAD DEL PARTIDO</b>
+
+{game['away']} {game['away_score']} - {game['home']} {game['home_score']}
+📈 {player}: {status_text}
+🎯 {bet['pick']}
+⏰ Final: ~20:00
+                        """
+                        send_message(CHAT_ID, msg)
+                        MONITOR_STATUS["games_notified"][key + "_mid"] = True
+                        print(f"[MONITOR] MITAD: {bet['event']}")
+                    
+                    # FINAL
+                    elif status == "Final" and key + "_final" not in MONITOR_STATUS["games_notified"]:
+                        ks = get_pitcher_ks(player, game_id)
+                        line = bet["line"]
+                        score = f"{game['away']} {game['away_score']} - {game['home']} {game['home_score']}"
+                        
+                        if "O" in bet["pick"]:
+                            won = ks > line
+                        elif "U" in bet["pick"]:
+                            won = ks < line
+                        else:
+                            won = None
+                        
+                        if won is not None:
+                            profit = bet["ganar"] - bet["stake"] if won else -bet["stake"]
+                            bet["estado"] = "win" if won else "loss"
+                            MEMORY["bankroll"]["actual"] += profit
+                            
+                            if won:
+                                msg = f"""
+🏆 <b>¡{player.upper()} GANÓ!</b>
+
+{score}
+✅ {bet['pick']}
+📈 {ks} Ks vs Línea {line}
+💰 <b>Ganancia: +{profit:.2f} Bs</b>
+
+📊 Bankroll: {MEMORY['bankroll']['actual']} Bs
+                                """
+                            else:
+                                msg = f"""
+❌ <b>{player.upper()} PERDIÓ</b>
+
+{score}
+❌ {bet['pick']}
+📈 {ks} Ks vs Línea {line}
+💸 <b>Pérdida: -{bet['stake']} Bs</b>
+
+📊 Bankroll: {MEMORY['bankroll']['actual']} Bs
+                                """
+                            
+                            send_message(CHAT_ID, msg)
+                            MONITOR_STATUS["games_notified"][key + "_final"] = True
+                            print(f"[MONITOR] FINAL: {bet['event']} - {'WIN' if won else 'LOSS'}")
+            
+            # Verificar si todos terminaron
+            pending = sum(1 for b in MEMORY["apuestas_hoy"]["picks"].values() if b["estado"] == "pending")
+            if pending == 0 and games_found > 0:
+                msg = f"""
+✅ <b>TODOS LOS PARTIDOS TERMINARON</b>
+
+📊 <b>RESUMEN FINAL</b>
+• Bankroll: {MEMORY['bankroll']['actual']} Bs
+• Ganancia: {'+' if MEMORY['bankroll']['actual'] - MEMORY['bankroll']['inicial'] >= 0 else ''}{MEMORY['bankroll']['actual'] - MEMORY['bankroll']['inicial']:.2f} Bs
+                """
+                send_message(CHAT_ID, msg)
+                print("[MONITOR] Todos los partidos terminaron")
+                break
+            
+            print(f"[MONITOR] Pendientes: {pending}/5")
+            
+        except Exception as e:
+            print(f"[MONITOR] Error: {e}")
+        
+        time.sleep(120)  # Verificar cada 2 minutos
+
+# ============================================
 # MAIN
 # ============================================
 
 if __name__ == "__main__":
     print("=" * 50)
-    print("SPORT EDGE BOT - Con Memoria Completa")
+    print("SPORT EDGE BOT - Con Monitor 24/7")
     print("=" * 50)
     
     # Configurar webhook
     setup_webhook()
     
-    # Iniciar servidor
+    # Iniciar monitor en background
+    monitor_thread = threading.Thread(target=monitor_loop, daemon=True)
+    monitor_thread.start()
+    print("[MONITOR] Monitor iniciado en background")
+    
+    # Iniciar servidor Flask
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
