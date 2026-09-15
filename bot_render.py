@@ -17,6 +17,56 @@ from flask import Flask, request, jsonify
 # Configurar encoding
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
+# ============================================
+# PERSISTENCIA - Guardar estado en archivo
+# ============================================
+STATE_FILE = os.path.join(os.path.dirname(__file__), 'monitor_state.json')
+
+def save_state():
+    """Guarda estado del monitor en archivo"""
+    try:
+        state = {
+            'games_notified': MONITOR_STATUS['games_notified'],
+            'last_check': MONITOR_STATUS['last_check'],
+            'bankroll': MEMORY['bankroll'],
+            'apuestas': {str(k): {kk: vv for kk, vv in v.items()} for k, v in MEMORY['apuestas_hoy']['picks'].items()}
+        }
+        with open(STATE_FILE, 'w') as f:
+            json.dump(state, f, indent=2)
+        print(f"[STATE] Guardado: {STATE_FILE}")
+    except Exception as e:
+        print(f"[STATE] Error guardando: {e}")
+
+def load_state():
+    """Carga estado del monitor desde archivo"""
+    global MONITOR_STATUS
+    try:
+        if os.path.exists(STATE_FILE):
+            with open(STATE_FILE, 'r') as f:
+                state = json.load(f)
+            MONITOR_STATUS['games_notified'] = state.get('games_notified', {})
+            MONITOR_STATUS['last_check'] = state.get('last_check', None)
+            if 'bankroll' in state:
+                MEMORY['bankroll'] = state['bankroll']
+            if 'apuestas' in state:
+                for k, v in state['apuestas'].items():
+                    MEMORY['apuestas_hoy']['picks'][int(k)] = v
+            print(f"[STATE] Cargado: {len(MONITOR_STATUS['games_notified'])} notificaciones previas")
+        else:
+            print("[STATE] No existe archivo, empezando de cero")
+    except Exception as e:
+        print(f"[STATE] Error cargando: {e}")
+
+# Estado del monitor (se persiste en archivo)
+MONITOR_STATUS = {
+    'running': False,
+    'last_check': None,
+    'games_notified': {}
+}
+
+# Cargar estado al iniciar
+load_state()
+
 # Telegram
 TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '8563502125:AAFyhneNu2iBjQbUmE_bNGtFdYi8nNHzfgo')
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
@@ -940,6 +990,7 @@ def monitor_loop():
                         """
                         send_message(CHAT_ID, msg)
                         MONITOR_STATUS["games_notified"][key + "_start"] = True
+                        save_state()  # Persistir estado
                         print(f"[MONITOR] INICIO: {bet['event']}")
                     
                     # MITAD (5ta entrada)
@@ -962,6 +1013,7 @@ def monitor_loop():
                         """
                         send_message(CHAT_ID, msg)
                         MONITOR_STATUS["games_notified"][key + "_mid"] = True
+                        save_state()  # Persistir estado
                         print(f"[MONITOR] MITAD: {bet['event']}")
                     
                     # FINAL
@@ -1007,6 +1059,7 @@ def monitor_loop():
                             
                             send_message(CHAT_ID, msg)
                             MONITOR_STATUS["games_notified"][key + "_final"] = True
+                            save_state()  # Persistir estado
                             print(f"[MONITOR] FINAL: {bet['event']} - {'WIN' if won else 'LOSS'}")
             
             # Verificar si todos terminaron
@@ -1020,6 +1073,7 @@ def monitor_loop():
 • Ganancia: {'+' if MEMORY['bankroll']['actual'] - MEMORY['bankroll']['inicial'] >= 0 else ''}{MEMORY['bankroll']['actual'] - MEMORY['bankroll']['inicial']:.2f} Bs
                 """
                 send_message(CHAT_ID, msg)
+                save_state()  # Persistir estado final
                 print("[MONITOR] Todos los partidos terminaron")
                 break
             
