@@ -97,12 +97,14 @@ MEMORY = {
     
     "bankroll": {
         "inicial": 3065,
-        "actual": 3065,
-        "1xbet": 2365,
-        "micasino": 700,
-        "unidad": 30.65,  # 1%
-        "max_por_dia": 153,  # 5%
-        "max_por_pick": 61  # 2%
+        "actual": 2669,
+        "1xbet": 2080,
+        "micasino": 589,
+        "unidad": 26.69,  # 1%
+        "max_por_dia": 133.45,  # 5%
+        "max_por_pick": 53.38,  # 2%
+        "ganancia_hoy": -396,
+        "apuestas_hoy": 426
     },
     
     "estrategia": {
@@ -138,8 +140,10 @@ MEMORY = {
                 "ganar": 100.70,
                 "ev": 21.6,
                 "razon": "Yamamoto ERA 2.62, K/9 8.95, ultimos 5: 10,8,8,9,9. Reds K% 25.5%",
-                "estado": "pendiente",
-                "boleto": "5420883747"
+                "estado": "loss",
+                "profit": -53,
+                "boleto": "5420883747",
+                "resultado": "Yamamoto 7 Ks, necesitaba 8. Dodgers ganando 4-0 lo sacaron 7ma entrada."
             },
             2: {
                 "pick": "Misiorowski O8.5 Ks",
@@ -150,8 +154,10 @@ MEMORY = {
                 "ganar": 60.20,
                 "ev": 3.2,
                 "razon": "Misiorowski ERA 1.95, K/9 13.17. Pirates K% 22-24%",
-                "estado": "pendiente",
-                "boleto": "5420980491"
+                "estado": "loss",
+                "profit": -28,
+                "boleto": "5420980491",
+                "resultado": "Misiorowski 7 Ks, necesitaba 9. Brewers ganando 5-0 lo sacaron 5ta entrada."
             },
             3: {
                 "pick": "Stephens +2.5",
@@ -163,7 +169,8 @@ MEMORY = {
                 "ev": 7.3,
                 "razon": "WTA Guadalajara, hard court. Stephens experiencia superior",
                 "estado": "pendiente",
-                "boleto": "5421161569"
+                "boleto": "5421161569",
+                "resultado": "WTA Guadalajara Round 2. Stephens gano Set 1 7-6, perdiendo Set 2 2-4."
             },
             4: {
                 "pick": "Sanchez Ganara",
@@ -174,8 +181,10 @@ MEMORY = {
                 "ganar": 532,
                 "ev": 19.7,
                 "razon": "Sanchez ERA 2.79 vs Kent ERA 6.59. Phillies favoritos",
-                "estado": "pendiente",
-                "boleto": "87318108523"
+                "estado": "loss",
+                "profit": -285,
+                "boleto": "87318108523",
+                "resultado": "Phillies perdieron 3-6. Sanchez 5 Ks 6.1 IP pero equipo no anoto."
             },
             5: {
                 "pick": "Sandoval O5.5 Ks",
@@ -186,8 +195,10 @@ MEMORY = {
                 "ganar": 64.50,
                 "ev": 16.1,
                 "razon": "Sandoval K/9 8.5, linea baja 5.5. Rangers no elite en contacto",
-                "estado": "pendiente",
-                "boleto": "5421384041"
+                "estado": "loss",
+                "profit": -30,
+                "boleto": "5421384041",
+                "resultado": "Sandoval 5 Ks, necesitaba 6. Red Sox perdiendo 2-4 lo sacaron 3ra entrada."
             }
         }
     },

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Analyzer - Analizar Partido</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+        [data-bs-theme="dark"] {
+            --primary: #3b82f6;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; }
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .card-header { background: transparent; border-bottom: 1px solid var(--border); font-weight: 600; }
+        .sidebar { min-height: 100vh; background: var(--card-bg); border-right: 1px solid var(--border); }
+        .nav-link { color: var(--text-muted); border-radius: 8px; margin: 2px 8px; transition: all 0.2s; }
+        .nav-link:hover, .nav-link.active { color: var(--primary); background: rgba(37,99,235,0.1); }
+        .nav-link i { width: 20px; text-align: center; }
+        .prob-bar { height: 8px; border-radius: 4px; background: var(--border); overflow: hidden; }
+        .prob-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+        .value-bet-card { border-left: 4px solid var(--success); transition: all 0.2s; }
+        .value-bet-card:hover { background: rgba(22,163,74,0.05); }
+        .value-bet-card .edge-badge { background: var(--success); color: white; }
+        .score-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; max-width: 400px; }
+        .score-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 0.75rem; font-weight: 600; background: var(--border); }
+        .score-cell.high { background: rgba(22,163,74,0.2); color: var(--success); }
+        .score-cell.med { background: rgba(37,99,235,0.2); color: var(--primary); }
+        @media (max-width: 768px) {
+            .sidebar { min-height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+            .score-grid { grid-template-columns: repeat(5, 1fr); }
+        }
+    </style>
+</head>
+<body data-bs-theme="light">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="sidebar col-12 col-md-3 col-lg-2 p-0">
+                <div class="p-3 border-bottom" style="border-color: var(--border) !important;">
+                    <h4 class="mb-0 fw-bold" style="color: var(--primary);">
+                        <i class="bi bi-bar-chart-line me-2"></i>Sports Analyzer
+                    </h4>
+                    <small class="text-muted">Poisson Betting Analytics</small>
+                </div>
+                <ul class="nav flex-column p-2">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard') }}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('analyze') }}">
+                            <i class="bi bi-graph-up-arrow"></i> Analizar Partido
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('bets') }}">
+                            <i class="bi bi-ticket-perforated"></i> Mis Apuestas
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-12 col-md-9 col-lg-10 p-4">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="container-fluid mb-3">
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'warning' }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Input Form -->
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-lg-6">
+                        <div class="card">
+                            <div class="card-header"><i class="bi bi-sliders me-2"></i>Parámetros del Partido</div>
+                            <div class="card-body">
+                                <form method="POST" id="analyzeForm">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-medium">Equipo Local</label>
+                                            <input type="text" class="form-control" name="home_team" value="{{ home_team or 'Local' }}">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-medium">Equipo Visitante</label>
+                                            <input type="text" class="form-control" name="away_team" value="{{ away_team or 'Visitante' }}">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-medium">λ Local (goles esperados)</label>
+                                            <input type="number" step="0.01" min="0" max="5" class="form-control" name="home_lambda" value="{{ home_lambda or 1.5 }}">
+                                            <div class="form-text">Promedio goles marcados en casa</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-medium">λ Visitante (goles esperados)</label>
+                                            <input type="number" step="0.01" min="0" max="5" class="form-control" name="away_lambda" value="{{ away_lambda or 1.1 }}">
+                                            <div class="form-text">Promedio goles marcados fuera</div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-medium">Edge mínimo para Value Bets (%)</label>
+                                            <input type="number" step="0.5" min="0" max="50" class="form-control" name="min_edge" value="{{ (min_edge * 100) if min_edge else 5 }}">
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <h6 class="fw-medium mb-3"><i class="bi bi-tag me-2"></i>Cuotas del Mercado (opcional - para Value Bets)</h6>
+                                    <div class="row g-2">
+                                        <div class="col-4">
+                                            <label class="form-label small">1 (Local)</label>
+                                            <input type="number" step="0.01" min="1.01" class="form-control form-control-sm" name="home" value="{{ market_odds.home if market_odds else '' }}">
+                                        </div>
+                                        <div class="col-4">
+                                            <label class="form-label small">X (Empate)</label>
+                                            <input type="number" step="0.01" min="1.01" class="form-control form-control-sm" name="draw" value="{{ market_odds.draw if market_odds else '' }}">
+                                        </div>
+                                        <div class="col-4">
+                                            <label class="form-label small">2 (Visitante)</label>
+                                            <input type="number" step="0.01" min="1.01" class="form-control form-control-sm" name="away" value="{{ market_odds.away if market_odds else '' }}">
+                                        </div>
+                                        <div class="col-4">
+                                            <label class="form-label small">Over 1.5</label>
+                                            <input type="number" step="0.01" min="1.01" class="form-control form-control-sm" name="over_15" value="{{ market_odds.over_15 if market_odds else '' }}">
+                                        </div>
+                                        <div class="col-4">
+                                            <label class="form-label small">Under 1.5</label>
+                                            <input type="number" step="0.01" min="1.01" class="form-control form-control-sm" name="under_15" value="{{ market_odds.under_15 if market_odds else '' }}">
+                                        </div>
+                                        <div class="col-4">
+                                            <label class="form-label small">Over 2.5</label>
+                                            <input type="number" step="0.01" min="1.01" class="form-control form-control-sm" name="over_25" value="{{ market_odds.over_25 if market_odds else '' }}">
+                                        </div>
+                                        <div class="col-4">
+                                            <label class="form-label small">Under 2.5</label>
+                                            <input type="number" step="0.01" min="1.01" class="form-control form-control-sm" name="under_25" value="{{ market_odds.under_25 if market_odds else '' }}">
+                                        </div>
+                                        <div class="col-4">
+                                            <label class="form-label small">Over 3.5</label>
+                                            <input type="number" step="0.01" min="1.01" class="form-control form-control-sm" name="over_35" value="{{ market_odds.over_35 if market_odds else '' }}">
+                                        </div>
+                                        <div class="col-4">
+                                            <label class="form-label small">Under 3.5</label>
+                                            <input type="number" step="0.01" min="1.01" class="form-control form-control-sm" name="under_35" value="{{ market_odds.under_35 if market_odds else '' }}">
+                                        </div>
+                                        <div class="col-4">
+                                            <label class="form-label small">BTTS Sí</label>
+                                            <input type="number" step="0.01" min="1.01" class="form-control form-control-sm" name="btts_yes" value="{{ market_odds.btts_yes if market_odds else '' }}">
+                                        </div>
+                                        <div class="col-4">
+                                            <label class="form-label small">BTTS No</label>
+                                            <input type="number" step="0.01" min="1.01" class="form-control form-control-sm" name="btts_no" value="{{ market_odds.btts_no if market_odds else '' }}">
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 d-grid">
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <i class="bi bi-calculator me-2"></i>Analizar Partido
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats / Info -->
+                    <div class="col-12 col-lg-6">
+                        <div class="card h-100">
+                            <div class="card-header"><i class="bi bi-info-circle me-2"></i>Guía Rápida</div>
+                            <div class="card-body">
+                                <h6 class="fw-medium mb-3">Parámetros λ (Lambda)</h6>
+                                <p class="text-muted small mb-3">Los valores λ representan los <strong>goles esperados</strong> para cada equipo. Se calculan típicamente como:</p>
+                                <ul class="text-muted small mb-3">
+                                    <li>Promedio goles marcados (últimos 6-10 partidos)</li>
+                                    <li>Ajustado por fortaleza defensiva rival</li>
+                                    <li>Factor casa/fuera (~1.4 vs 1.1 en ligas top)</li>
+                                </ul>
+                                <h6 class="fw-medium mb-2">Interpretación Poisson</h6>
+                                <div class="row text-center text-muted small">
+                                    <div class="col-4"><div class="fw-bold text-primary">λ = 0.5</div><div>Equipo muy defensivo</div></div>
+                                    <div class="col-4"><div class="fw-bold text-warning">λ = 1.5</div><div>Promedio liga estándar</div></div>
+                                    <div class="col-4"><div class="fw-bold text-success">λ = 2.5+</div><div>Equipo muy ofensivo</div></div>
+                                </div>
+                                <hr>
+                                <h6 class="fw-medium mb-2">Value Betting</h6>
+                                <p class="text-muted small">Una apuesta tiene <strong>valor (value)</strong> cuando:</p>
+                                <code class="small">Cuota × Probabilidad > 1</code>
+                                <p class="text-muted small mt-2">El <strong>Edge</strong> = (Cuota × Prob) - 1. Kelly fraccionado (1/4) gestiona el riesgo.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if prediction %}
+                <!-- Results -->
+                <div class="row g-3 mb-4">
+                    <!-- 1X2 Probabilities -->
+                    <div class="col-12 col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-header"><i class="bi bi-trophy me-2"></i>Resultado 1X2</div>
+                            <div class="card-body">
+                                <div class="text-center mb-4">
+                                    <h2 class="fw-bold">{{ home_team }} vs {{ away_team }}</h2>
+                                    <small class="text-muted">λ: {{ home_lambda }} - {{ away_lambda }}</small>
+                                </div>
+                                <div class="d-flex justify-content-around text-center mb-4">
+                                    <div>
+                                        <div class="fs-1 fw-bold text-primary">{{ "%.1f"|format(prediction.home_win_prob * 100) }}%</div>
+                                        <small class="text-muted">1 - Local</small>
+                                    </div>
+                                    <div>
+                                        <div class="fs-1 fw-bold text-secondary">{{ "%.1f"|format(prediction.draw_prob * 100) }}%</div>
+                                        <small class="text-muted">X - Empate</small>
+                                    </div>
+                                    <div>
+                                        <div class="fs-1 fw-bold text-danger">{{ "%.1f"|format(prediction.away_win_prob * 100) }}%</div>
+                                        <small class="text-muted">2 - Visitante</small>
+                                    </div>
+                                </div>
+                                <div class="prob-bar mb-2">
+                                    <div class="prob-fill bg-primary" style="width: {{ prediction.home_win_prob * 100 }}%"></div>
+                                    <div class="prob-fill bg-secondary" style="width: {{ prediction.draw_prob * 100 }}%"></div>
+                                    <div class="prob-fill bg-danger" style="width: {{ prediction.away_win_prob * 100 }}%"></div>
+                                </div>
+                                <div class="d-flex justify-content-between small text-muted">
+                                    <span>Local</span><span>Empate</span><span>Visitante</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Over/Under & BTTS -->
+                    <div class="col-12 col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-header"><i class="bi bi-bar-chart me-2"></i>Over/Under & BTTS</div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Over 1.5</span><span class="fw-bold">{{ "%.1f"|format(prediction.over_under_probs.over_15 * 100) }}%</span>
+                                    </div>
+                                    <div class="prob-bar"><div class="prob-fill bg-primary" style="width: {{ prediction.over_under_probs.over_15 * 100 }}%"></div></div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Under 1.5</span><span class="fw-bold">{{ "%.1f"|format(prediction.over_under_probs.under_15 * 100) }}%</span>
+                                    </div>
+                                    <div class="prob-bar"><div class="prob-fill bg-secondary" style="width: {{ prediction.over_under_probs.under_15 * 100 }}%"></div></div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Over 2.5</span><span class="fw-bold">{{ "%.1f"|format(prediction.over_under_probs.over_25 * 100) }}%</span>
+                                    </div>
+                                    <div class="prob-bar"><div class="prob-fill bg-warning" style="width: {{ prediction.over_under_probs.over_25 * 100 }}%"></div></div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Under 2.5</span><span class="fw-bold">{{ "%.1f"|format(prediction.over_under_probs.under_25 * 100) }}%</span>
+                                    </div>
+                                    <div class="prob-bar"><div class="prob-fill bg-info" style="width: {{ prediction.over_under_probs.under_25 * 100 }}%"></div></div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>BTTS (Ambos marcan)</span><span class="fw-bold">{{ "%.1f"|format(prediction.btts_prob * 100) }}%</span>
+                                    </div>
+                                    <div class="prob-bar"><div class="prob-fill bg-success" style="width: {{ prediction.btts_prob * 100 }}%"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monte Carlo Validation -->
+                    <div class="col-12 col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-header"><i class="bi bi-cpu me-2"></i>Validación Monte Carlo (10k sims)</div>
+                            <div class="card-body">
+                                {% if montecarlo %}
+                                <div class="row text-center mb-3">
+                                    <div class="col-4">
+                                        <div class="fw-bold text-primary fs-4">{{ "%.1f"|format(montecarlo.home_win * 100) }}%</div>
+                                        <small class="text-muted">1</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="fw-bold text-secondary fs-4">{{ "%.1f"|format(montecarlo.draw * 100) }}%</div>
+                                        <small class="text-muted">X</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="fw-bold text-danger fs-4">{{ "%.1f"|format(montecarlo.away_win * 100) }}%</div>
+                                        <small class="text-muted">2</small>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row text-center text-muted small">
+                                    <div class="col-6">
+                                        <div class="fw-bold">{{ montecarlo.avg_home_goals }}</div>
+                                        <div>Goles local (media)</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="fw-bold">{{ montecarlo.avg_away_goals }}</div>
+                                        <div>Goles visitante (media)</div>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <small class="text-muted">
+                                        Diferencia vs Poisson:
+                                        1: {{ "%.2f"|format((montecarlo.home_win - prediction.home_win_prob) * 100) }}pp |
+                                        X: {{ "%.2f"|format((montecarlo.draw - prediction.draw_prob) * 100) }}pp |
+                                        2: {{ "%.2f"|format((montecarlo.away_win - prediction.away_win_prob) * 100) }}pp
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Correct Score Matrix -->
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header"><i class="bi bi-grid-3x3-gap me-2"></i>Marcadores Exactos - Top Probabilidades</div>
+                            <div class="card-body">
+                                <div class="score-grid" id="scoreGrid">
+                                    {% set top_scores = prediction.correct_score_probs.items() | sort(attribute='1', reverse=true) | list[:15] %}
+                                    {% for score, prob in top_scores %}
+                                        {% set prob_pct = prob * 100 %}
+                                        <div class="score-cell {% if prob_pct > 10 %}high{% elif prob_pct > 5 %}med{% endif %}"
+                                             title="{{ score }}: {{ '%.2f'|format(prob_pct) }}%">
+                                            {{ score }}<br><small>{{ '%.2f'|format(prob_pct) }}%</small>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="mt-3 text-muted small">
+                                    Mostrando top 15 de {{ prediction.correct_score_probs|length }} combinaciones posibles.
+                                    Suma total: {{ "%.1f"|format(prediction.correct_score_probs.values() | sum * 100) }}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Value Bets -->
+                {% if value_bets %}
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="bi bi-gem me-2"></i>Value Bets Detectadas ({{ value_bets|length }})</h5>
+                                <span class="badge bg-success">Edge ≥ {{ "%.0f"|format(min_edge * 100) }}%</span>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Mercado</th>
+                                                <th>Cuota</th>
+                                                <th>Prob. Poisson</th>
+                                                <th>Edge</th>
+                                                <th>Kelly (1/4)</th>
+                                                <th>EV por unidad</th>
+                                                <th>Acción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for vb in value_bets %}
+                                            <tr class="value-bet-card">
+                                                <td class="fw-medium">{{ vb.market }}</td>
+                                                <td>{{ "%.2f"|format(vb.odds) }}</td>
+                                                <td>{{ vb.probability }}%</td>
+                                                <td><span class="badge edge-badge">+{{ vb.edge }}%</span></td>
+                                                <td>{{ vb.kelly_fraction }}%</td>
+                                                <td class="{% if vb.expected_value > 0 %}text-success{% else %}text-danger{% endif %} fw-medium">
+                                                    {{ "%+.4f"|format(vb.expected_value) }}
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary btn-bet"
+                                                            data-event="{{ home_team }} vs {{ away_team }}"
+                                                            data-market="{{ vb.market }}"
+                                                            data-selection="{{ vb.market }}"
+                                                            data-odds="{{ vb.odds }}"
+                                                            data-prob="{{ vb.probability / 100 }}"
+                                                            data-kelly="{{ vb.kelly_fraction / 100 }}">
+                                                        <i class="bi bi-plus-circle"></i> Apostar
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Goal Distributions -->
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <div class="card">
+                            <div class="card-header"><i class="bi bi-bar-chart-line me-2"></i>Distribución Goles - {{ home_team }} (λ={{ home_lambda }})</div>
+                            <div class="card-body">
+                                <div class="d-flex align-items-end gap-1" style="height: 200px;">
+                                    {% for k in range(8) %}
+                                        {% set prob = prediction.home_goals_dist[k] * 100 %}
+                                        <div class="flex-fill d-flex flex-column align-items-center" style="max-width: 50px;">
+                                            <div class="bg-primary w-100 rounded-top" style="height: {{ prob * 2 }}%; min-height: 2px;" title="{{ k }} goles: {{ '%.1f'|format(prob) }}%"></div>
+                                            <small class="text-muted mt-1">{{ k }}</small>
+                                            <small class="fw-medium">{{ '%.1f'|format(prob) }}%</small>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="card">
+                            <div class="card-header"><i class="bi bi-bar-chart-line me-2"></i>Distribución Goles - {{ away_team }} (λ={{ away_lambda }})</div>
+                            <div class="card-body">
+                                <div class="d-flex align-items-end gap-1" style="height: 200px;">
+                                    {% for k in range(8) %}
+                                        {% set prob = prediction.away_goals_dist[k] * 100 %}
+                                        <div class="flex-fill d-flex flex-column align-items-center" style="max-width: 50px;">
+                                            <div class="bg-danger w-100 rounded-top" style="height: {{ prob * 2 }}%; min-height: 2px;" title="{{ k }} goles: {{ '%.1f'|format(prob) }}%"></div>
+                                            <small class="text-muted mt-1">{{ k }}</small>
+                                            <small class="fw-medium">{{ '%.1f'|format(prob) }}%</small>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Theme persistence
+        const theme = localStorage.getItem('theme') || 'light';
+        document.body.setAttribute('data-bs-theme', theme);
+
+        // Auto-submit on Enter in inputs
+        document.getElementById('analyzeForm')?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+                e.preventDefault();
+                document.getElementById('analyzeForm').submit();
+            }
+        });
+
+        // Bet button handlers
+        document.querySelectorAll('.btn-bet').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const params = new URLSearchParams({
+                    event_name: btn.dataset.event,
+                    sport: 'Football',
+                    market: btn.dataset.market,
+                    selection: btn.dataset.selection,
+                    odds: btn.dataset.odds,
+                    stake: (btn.dataset.kelly * 100).toFixed(2), // Kelly * 100 units as suggestion
+                    probability: (btn.dataset.prob * 100).toFixed(1)
+                });
+                window.location.href = `{{ url_for('bets') }}?${params}`;
+            });
+        });
+    </script>
+</body>
+</html>

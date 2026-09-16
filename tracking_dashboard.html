@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracking Profesional - Sports Betting</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #00d9ff;
+            font-size: 2.5em;
+            text-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card h3 {
+            color: #00d9ff;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        .metric-label {
+            color: #aaa;
+        }
+        .metric-value {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .positive { color: #00ff88; }
+        .negative { color: #ff4757; }
+        .neutral { color: #ffa502; }
+        .bet-form {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            margin-bottom: 5px;
+            color: #aaa;
+            font-size: 0.9em;
+        }
+        .form-group input, .form-group select {
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 1em;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #00d9ff;
+            box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+        }
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            color: #fff;
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #ff4757 0%, #cc2a3a 100%);
+            color: #fff;
+        }
+        .bets-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .bets-table th, .bets-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .bets-table th {
+            background: rgba(0, 217, 255, 0.2);
+            color: #00d9ff;
+            font-weight: bold;
+        }
+        .bets-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .status-win {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+        .status-loss {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+        }
+        .status-pending {
+            background: rgba(255, 165, 2, 0.2);
+            color: #ffa502;
+        }
+        .chart-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        .chart {
+            height: 300px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 20px;
+        }
+        .bar {
+            width: 40px;
+            background: linear-gradient(180deg, #00d9ff 0%, #0099cc 100%);
+            border-radius: 5px 5px 0 0;
+            transition: height 0.5s ease;
+        }
+        .bar:hover {
+            background: linear-gradient(180deg, #00ff88 0%, #00cc6a 100%);
+        }
+        .instructions {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+        .instructions h3 {
+            color: #00d9ff;
+            margin-bottom: 15px;
+        }
+        .instructions ol {
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin: 10px 0;
+            color: #aaa;
+        }
+        .instructions code {
+            background: rgba(0, 217, 255, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #00d9ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Tracking Profesional - Sports Betting</h1>
+        
+        <!-- Dashboard Metrics -->
+        <div class="dashboard">
+            <div class="card">
+                <h3>💰 Bankroll</h3>
+                <div class="metric">
+                    <span class="metric-label">Inicial</span>
+                    <span class="metric-value">3,065 Bs</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Actual</span>
+                    <span class="metric-value" id="currentBankroll">3,065 Bs</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">En Juego</span>
+                    <span class="metric-value neutral" id="inPlay">53 Bs</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>📊 Métricas</h3>
+                <div class="metric">
+                    <span class="metric-label">ROI</span>
+                    <span class="metric-value" id="roi">0.00%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Yield</span>
+                    <span class="metric-value" id="yield">0.00</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Hit Rate</span>
+                    <span class="metric-value" id="hitRate">0.00%</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>📈 Estadísticas</h3>
+                <div class="metric">
+                    <span class="metric-label">Total Apuestas</span>
+                    <span class="metric-value" id="totalBets">1</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Wins</span>
+                    <span class="metric-value positive" id="wins">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Losses</span>
+                    <span class="metric-value negative" id="losses">0</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>🎯 EV</h3>
+                <div class="metric">
+                    <span class="metric-label">EV Promedio</span>
+                    <span class="metric-value positive" id="avgEV">+21.6%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">CLV Promedio</span>
+                    <span class="metric-value" id="avgCLV">N/A</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Unidades Apostadas</span>
+                    <span class="metric-value" id="totalUnits">1.73</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add Bet Form -->
+        <div class="bet-form">
+            <h2>📝 Registrar Nueva Apuesta</h2>
+            <form id="betForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fecha</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Deporte</label>
+                        <select id="sport" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="MLB">MLB</option>
+                            <option value="Tenis">Tenis</option>
+                            <option value="Fútbol">Fútbol</option>
+                            <option value="NBA">NBA</option>
+                            <option value="NFL">NFL</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Mercado</label>
+                        <select id="market" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="Player Props">Player Props</option>
+                            <option value="Totales">Totales (O/U)</option>
+                            <option value="Handicap">Handicap</option>
+                            <option value="Moneyline">Moneyline</option>
+                            <option value="Spread">Spread</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Evento</label>
+                        <input type="text" id="event" placeholder="Ej: Dodgers vs Reds" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <input type="text" id="type" placeholder="Ej: Over 7.5 Ks" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Casa</label>
+                        <select id="house" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="micasino">micasino</option>
+                            <option value="1xBet">1xBet</option>
+                            <option value="Bet365">Bet365</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cuota</label>
+                        <input type="number" id="odds" step="0.01" min="1.01" placeholder="1.90" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Unidades</label>
+                        <input type="number" id="units" step="0.01" min="0.1" placeholder="1.73" required>
+                    </div>
+                    <div class="form-group">
+                        <label>EV %</label>
+                        <input type="number" id="ev" step="0.1" placeholder="+21.6" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Notas</label>
+                        <input type="text" id="notes" placeholder="Análisis, reasoning...">
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button type="submit" class="btn btn-primary">Agregar Apuesta</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Bets Table -->
+        <div class="chart-container">
+            <h2>📋 Historial de Apuestas</h2>
+            <table class="bets-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Deporte</th>
+                        <th>Mercado</th>
+                        <th>Evento</th>
+                        <th>Tipo</th>
+                        <th>Casa</th>
+                        <th>Cuota</th>
+                        <th>Unidades</th>
+                        <th>Resultado</th>
+                        <th>Ganancia</th>
+                        <th>EV</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="betsTableBody">
+                    <!-- Bets will be added here -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Instructions -->
+        <div class="instructions">
+            <h3>📚 Cómo Usar Este Dashboard</h3>
+            <ol>
+                <li><strong>Registra cada apuesta</strong> usando el formulario de arriba</li>
+                <li><strong>Actualiza el resultado</strong> después de cada partido (Win/Loss/Push)</li>
+                <li><strong>Revisa las métricas</strong> semanalmente para ver tu progreso</li>
+                <li><strong>Confía en el proceso</strong> - necesitas 500+ apuestas para confiar en los números</li>
+                <li><strong>Exporta a Google Sheets</strong> para backup y análisis avanzado</li>
+            </ol>
+            <p style="margin-top: 20px; color: #00d9ff;">
+                <strong>Recordatorio:</strong> Los profesionales no miran resultados diarios. Miran ROI, CLV y Yield a largo plazo.
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize with first bet
+        let bets = [
+            {
+                id: 1,
+                date: '2026-09-15',
+                sport: 'MLB',
+                market: 'Player Props',
+                event: 'Dodgers vs Reds',
+                type: 'Yamamoto Over 7.5 Ks',
+                house: 'micasino',
+                odds: 1.90,
+                units: 1.73,
+                result: 'pending',
+                profit: 0,
+                ev: 21.6,
+                notes: 'Yamamoto ERA 2.62, K/9 8.95, ultimos 5: 10,8,8,9,9. Reds K% 25.5%'
+            },
+            {
+                id: 2,
+                date: '2026-09-15',
+                sport: 'MLB',
+                market: 'Player Props',
+                event: 'Brewers vs Pirates',
+                type: 'Misiorowski Over 8.5 Ks',
+                house: 'micasino',
+                odds: 2.15,
+                units: 0.91,
+                result: 'pending',
+                profit: 0,
+                ev: 3.2,
+                notes: 'Misiorowski ERA 1.95, K/9 13.17. Pirates K% 22-24%'
+            },
+            {
+                id: 3,
+                date: '2026-09-15',
+                sport: 'Tenis',
+                market: 'Handicap',
+                event: 'Stephens vs Tjen',
+                type: 'Stephens +2.5 juegos',
+                house: 'micasino',
+                odds: 1.95,
+                units: 0.98,
+                result: 'pending',
+                profit: 0,
+                ev: 7.3,
+                notes: 'WTA Guadalajara, hard court. Stephens experiencia superior, es underdog +2.5'
+            },
+            {
+                id: 4,
+                date: '2026-09-15',
+                sport: 'MLB',
+                market: 'Ganará (Win)',
+                event: 'Nationals vs Phillies',
+                type: 'Sánchez Ganará (Sí)',
+                house: '1xBet',
+                odds: 1.87,
+                units: 9.3,
+                result: 'pending',
+                profit: 0,
+                ev: 19.7,
+                notes: 'Sánchez ERA 2.79 vs Kent ERA 6.59. Phillies favoritos. Boleto #87318108523'
+            },
+            {
+                id: 5,
+                date: '2026-09-15',
+                sport: 'MLB',
+                market: 'Player Props',
+                event: 'Rangers vs Red Sox',
+                type: 'Sandoval O5.5 Ks',
+                house: 'micasino',
+                odds: 2.15,
+                units: 0.98,
+                result: 'pending',
+                profit: 0,
+                ev: 16.1,
+                notes: 'Sandoval K/9 8.5, ERA 4.58. Rangers no elite en contacto. Boleto #5421384041'
+            }
+        ];
+        
+        let bankroll = 3065;
+        let unitValue = 30.65;
+        
+        // Format date
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('es-VE');
+        }
+        
+        // Update dashboard metrics
+        function updateDashboard() {
+            const totalBets = bets.length;
+            const wins = bets.filter(b => b.result === 'win').length;
+            const losses = bets.filter(b => b.result === 'loss').length;
+            const totalUnits = bets.reduce((sum, b) => sum + b.units, 0);
+            const profit = bets.reduce((sum, b) => sum + b.profit, 0);
+            const hitRate = totalBets > 0 ? (wins / totalBets * 100) : 0;
+            const roi = totalUnits > 0 ? (profit / (totalUnits * unitValue) * 100) : 0;
+            const yieldVal = totalUnits > 0 ? (profit / totalUnits) : 0;
+            const avgEV = bets.reduce((sum, b) => sum + b.ev, 0) / totalBets;
+            
+            document.getElementById('currentBankroll').textContent = (bankroll + profit).toLocaleString() + ' Bs';
+            document.getElementById('inPlay').textContent = bets.filter(b => b.result === 'pending').reduce((sum, b) => sum + b.units * unitValue, 0).toLocaleString() + ' Bs';
+            document.getElementById('roi').textContent = roi.toFixed(2) + '%';
+            document.getElementById('yield').textContent = yieldVal.toFixed(2);
+            document.getElementById('hitRate').textContent = hitRate.toFixed(2) + '%';
+            document.getElementById('totalBets').textContent = totalBets;
+            document.getElementById('wins').textContent = wins;
+            document.getElementById('losses').textContent = losses;
+            document.getElementById('avgEV').textContent = '+' + avgEV.toFixed(1) + '%';
+            document.getElementById('totalUnits').textContent = totalUnits.toFixed(2);
+            
+            // Update table
+            const tbody = document.getElementById('betsTableBody');
+            tbody.innerHTML = '';
+            
+            bets.forEach(bet => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(bet.date)}</td>
+                    <td>${bet.sport}</td>
+                    <td>${bet.market}</td>
+                    <td>${bet.event}</td>
+                    <td>${bet.type}</td>
+                    <td>${bet.house}</td>
+                    <td>${bet.odds.toFixed(2)}</td>
+                    <td>${bet.units.toFixed(2)}</td>
+                    <td><span class="status-badge status-${bet.result}">${bet.result.toUpperCase()}</span></td>
+                    <td class="${bet.profit >= 0 ? 'positive' : 'negative'}">${bet.profit >= 0 ? '+' : ''}${bet.profit.toFixed(2)} Bs</td>
+                    <td class="positive">+${bet.ev.toFixed(1)}%</td>
+                    <td>
+                        ${bet.result === 'pending' ? `
+                            <button class="btn btn-success" onclick="updateResult(${bet.id}, 'win')">Win</button>
+                            <button class="btn btn-danger" onclick="updateResult(${bet.id}, 'loss')">Loss</button>
+                        ` : 'Finalizada'}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Update bet result
+        function updateResult(id, result) {
+            const bet = bets.find(b => b.id === id);
+            if (bet) {
+                bet.result = result;
+                if (result === 'win') {
+                    bet.profit = bet.units * unitValue * (bet.odds - 1);
+                } else {
+                    bet.profit = -bet.units * unitValue;
+                }
+                updateDashboard();
+            }
+        }
+        
+        // Add new bet
+        document.getElementById('betForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newBet = {
+                id: bets.length + 1,
+                date: document.getElementById('date').value,
+                sport: document.getElementById('sport').value,
+                market: document.getElementById('market').value,
+                event: document.getElementById('event').value,
+                type: document.getElementById('type').value,
+                house: document.getElementById('house').value,
+                odds: parseFloat(document.getElementById('odds').value),
+                units: parseFloat(document.getElementById('units').value),
+                result: 'pending',
+                profit: 0,
+                ev: parseFloat(document.getElementById('ev').value),
+                notes: document.getElementById('notes').value
+            };
+            
+            bets.push(newBet);
+            updateDashboard();
+            
+            // Reset form
+            this.reset();
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        });
+        
+        // Initialize
+        document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        updateDashboard();
+    </script>
+</body>
+</html>

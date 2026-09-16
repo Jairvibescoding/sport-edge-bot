@@ -1,0 +1,91 @@
+{
+  "bets": {
+    "1": {
+      "id": 1,
+      "date": "2026-09-15",
+      "sport": "MLB",
+      "market": "Player Props",
+      "event": "Dodgers vs Reds",
+      "pick": "Yamamoto O7.5 Ks",
+      "house": "micasino",
+      "odds": 1.9,
+      "stake": 53,
+      "potential_win": 100.7,
+      "result": "loss",
+      "profit": -53,
+      "notes": "Yamamoto saco 7 Ks, necesitaba 8. Dodgers ganando 4-0 lo sacaron en 7ma entrada."
+    },
+    "2": {
+      "id": 2,
+      "date": "2026-09-15",
+      "sport": "MLB",
+      "market": "Player Props",
+      "event": "Brewers vs Pirates",
+      "pick": "Misiorowski O8.5 Ks",
+      "house": "micasino",
+      "odds": 2.15,
+      "stake": 28,
+      "potential_win": 60.2,
+      "result": "loss",
+      "profit": -28,
+      "notes": "Misiorowski saco 7 Ks, necesitaba 9. Brewers ganando 5-0 lo sacaron en 5ta entrada."
+    },
+    "3": {
+      "id": 3,
+      "date": "2026-09-15",
+      "sport": "Tenis",
+      "market": "Handicap",
+      "event": "Stephens vs Tjen",
+      "pick": "Stephens +2.5",
+      "house": "micasino",
+      "odds": 1.95,
+      "stake": 30,
+      "potential_win": 58.5,
+      "result": "pending",
+      "profit": 0,
+      "notes": "WTA Guadalajara, Round 2. Stephens gano Set 1 7-6, perdiendo Set 2 2-4."
+    },
+    "4": {
+      "id": 4,
+      "date": "2026-09-15",
+      "sport": "MLB",
+      "market": "Win",
+      "event": "Nationals vs Phillies",
+      "pick": "Sanchez Ganara",
+      "house": "1xBet",
+      "odds": 1.87,
+      "stake": 285,
+      "potential_win": 532,
+      "result": "loss",
+      "profit": -285,
+      "notes": "Phillies perdieron 3-6. Sanchez pitchio bien (5 Ks, 6.1 IP) pero equipo no anoto."
+    },
+    "5": {
+      "id": 5,
+      "date": "2026-09-15",
+      "sport": "MLB",
+      "market": "Player Props",
+      "event": "Rangers vs Red Sox",
+      "pick": "Sandoval O5.5 Ks",
+      "house": "micasino",
+      "odds": 2.15,
+      "stake": 30,
+      "potential_win": 64.5,
+      "result": "loss",
+      "profit": -30,
+      "notes": "Sandoval saco 5 Ks, necesitaba 6. Red Sox perdiendo 2-4 lo sacaron en 3ra entrada."
+    }
+  },
+  "stats": {
+    "total_bets": 5,
+    "wins": 0,
+    "losses": 4,
+    "pending": 1,
+    "total_staked": 426,
+    "total_profit": -396,
+    "bankroll": 2669,
+    "win_rate": 0,
+    "roi": -92.96
+  },
+  "last_updated": "2026-09-15T21:50:00"
+}

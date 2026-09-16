@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sport Edge Bot Avatar</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #0a0a1a;
+        }
+        .avatar-container {
+            width: 512px;
+            height: 512px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .avatar-bg {
+            width: 512px;
+            height: 512px;
+            background: linear-gradient(135deg, #1a1a3e 0%, #0d0d2b 50%, #1a1a3e 100%);
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 60px rgba(0, 217, 255, 0.4);
+        }
+        .avatar-bg::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(0, 217, 255, 0.1), transparent, rgba(0, 255, 136, 0.1), transparent);
+            animation: rotate 10s linear infinite;
+        }
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+        .avatar-bg::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            bottom: 4px;
+            background: linear-gradient(135deg, #1a1a3e 0%, #0d0d2b 50%, #1a1a3e 100%);
+            border-radius: 50%;
+        }
+        .content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .icon {
+            font-size: 80px;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 20px rgba(0, 217, 255, 0.8));
+        }
+        .title {
+            font-family: 'Arial Black', sans-serif;
+            font-size: 52px;
+            font-weight: 900;
+            color: #00d9ff;
+            text-shadow: 0 0 30px rgba(0, 217, 255, 0.8), 0 4px 8px rgba(0, 0, 0, 0.5);
+            letter-spacing: 3px;
+            line-height: 1;
+        }
+        .subtitle {
+            font-family: 'Arial', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: #00ff88;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
+            letter-spacing: 8px;
+            margin-top: 5px;
+        }
+        .edge-text {
+            font-family: 'Arial Black', sans-serif;
+            font-size: 72px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00d9ff 0%, #00ff88 50%, #00d9ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 30px rgba(0, 217, 255, 0.6));
+            line-height: 1;
+        }
+        .bot-badge {
+            background: linear-gradient(135deg, #00d9ff, #00ff88);
+            color: #0d0d2b;
+            font-family: 'Arial Black', sans-serif;
+            font-size: 18px;
+            font-weight: 900;
+            padding: 6px 20px;
+            border-radius: 20px;
+            margin-top: 15px;
+            letter-spacing: 4px;
+            box-shadow: 0 0 30px rgba(0, 217, 255, 0.5);
+        }
+        .sparkles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+        }
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            border-radius: 50%;
+            animation: sparkle 2s ease-in-out infinite;
+        }
+        .sparkle:nth-child(1) { top: 15%; left: 20%; animation-delay: 0s; }
+        .sparkle:nth-child(2) { top: 25%; right: 25%; animation-delay: 0.5s; }
+        .sparkle:nth-child(3) { bottom: 30%; left: 15%; animation-delay: 1s; }
+        .sparkle:nth-child(4) { bottom: 20%; right: 20%; animation-delay: 1.5s; }
+        .sparkle:nth-child(5) { top: 40%; left: 10%; animation-delay: 0.3s; }
+        .sparkle:nth-child(6) { top: 60%; right: 12%; animation-delay: 0.8s; }
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="avatar-container">
+        <div class="avatar-bg">
+            <div class="sparkles">
+                <div class="sparkle"></div>
+                <div class="sparkle"></div>
+                <div class="sparkle"></div>
+                <div class="sparkle"></div>
+                <div class="sparkle"></div>
+                <div class="sparkle"></div>
+            </div>
+        </div>
+        <div class="content">
+            <div class="edge-text">SPORT</div>
+            <div class="title">EDGE</div>
+            <div class="bot-badge">🤖 BOT</div>
+        </div>
+    </div>
+</body>
+</html>

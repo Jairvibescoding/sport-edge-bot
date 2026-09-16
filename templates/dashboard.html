@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Edge — Centro de Análisis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #0c0c0e; --bg1: #141416; --bg2: #1c1c1f; --bg3: #242428;
+            --bdr: #2a2a2e; --bdr2: #38383d;
+            --t0: #f4f4f5; --t1: #a1a1aa; --t2: #71717a; --t3: #52525b;
+            --green: #22c55e; --red: #ef4444; --blue: #3b82f6; --amber: #f59e0b;
+            --r: 8px;
+        }
+        body { background: var(--bg); color: var(--t0); font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.6; }
+
+        /* TOPBAR */
+        .top { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 50px; background: var(--bg1); border-bottom: 1px solid var(--bdr); }
+        .top-brand { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+        .top-brand svg { width: 20px; height: 20px; color: var(--blue); }
+        .top-right { display: flex; gap: 12px; font-size: 12px; color: var(--t2); }
+        .top-right .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); display: inline-block; margin-right: 4px; animation: pulse 2s infinite; }
+        @keyframes pulse { 50% { opacity: .4; } }
+
+        .wrap { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+        /* INSTRUCTION BOX */
+        .intro {
+            background: var(--bg1); border: 1px solid var(--bdr); border-radius: var(--r);
+            padding: 20px 24px; margin-bottom: 24px;
+        }
+        .intro h2 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+        .intro p { font-size: 13px; color: var(--t1); line-height: 1.7; }
+        .steps { display: flex; gap: 20px; margin-top: 14px; }
+        .step { display: flex; align-items: start; gap: 10px; }
+        .step-num {
+            width: 24px; height: 24px; border-radius: 50%; background: var(--blue);
+            color: white; display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700; flex-shrink: 0;
+        }
+        .step-text { font-size: 13px; color: var(--t1); }
+        .step-text strong { color: var(--t0); }
+
+        /* SEARCH */
+        .search {
+            background: var(--bg1); border: 1px solid var(--bdr); border-radius: var(--r);
+            padding: 20px 24px; margin-bottom: 24px;
+        }
+        .search-grid { display: grid; grid-template-columns: 160px 1fr 1fr 130px auto; gap: 12px; align-items: end; }
+        .field label {
+            display: block; font-size: 11px; font-weight: 600; color: var(--t2);
+            margin-bottom: 5px; text-transform: uppercase; letter-spacing: .5px;
+        }
+        .field .hint { font-size: 11px; color: var(--t3); margin-top: 3px; }
+        .field input, .field select {
+            width: 100%; height: 40px; padding: 0 12px; background: var(--bg);
+            border: 1px solid var(--bdr); border-radius: 6px; color: var(--t0);
+            font-family: inherit; font-size: 14px; outline: none; transition: border .15s;
+        }
+        .field input:focus, .field select:focus { border-color: var(--blue); }
+        .field select option { background: var(--bg2); }
+        .btn {
+            height: 40px; padding: 0 28px; background: var(--blue); color: #fff; border: none;
+            border-radius: 6px; font-family: inherit; font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: background .15s; white-space: nowrap;
+        }
+        .btn:hover { background: #2563eb; }
+        .btn:disabled { opacity: .4; cursor: wait; }
+
+        /* WHAT YOU GET (after analysis) */
+        .results-title {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 2px; color: var(--t3); margin-bottom: 16px;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .results-title::after { content: ''; flex: 1; height: 1px; background: var(--bdr); }
+
+        /* MATCH BANNER */
+        .match-banner {
+            background: var(--bg1); border: 1px solid var(--bdr); border-radius: var(--r);
+            padding: 24px; margin-bottom: 20px; text-align: center; display: none;
+        }
+        .match-banner.show { display: block; }
+        .match-banner .league { font-size: 11px; color: var(--t2); text-transform: uppercase; letter-spacing: 2px; font-weight: 600; }
+        .match-banner .teams { font-size: 22px; font-weight: 800; margin: 8px 0; letter-spacing: -.5px; }
+        .match-banner .teams span { color: var(--t3); font-size: 14px; font-weight: 400; margin: 0 12px; }
+        .match-banner .meta { font-size: 12px; color: var(--t2); display: flex; justify-content: center; gap: 24px; margin-top: 8px; }
+
+        /* CARDS */
+        .card { background: var(--bg1); border: 1px solid var(--bdr); border-radius: var(--r); overflow: hidden; margin-bottom: 16px; }
+        .card-h {
+            padding: 12px 16px; font-size: 12px; font-weight: 700; color: var(--t1);
+            border-bottom: 1px solid var(--bdr); display: flex; align-items: center; justify-content: space-between;
+        }
+        .card-h .tag { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+        .card-b { padding: 16px; }
+
+        /* EXPLAINER BOX */
+        .explain {
+            background: var(--bg2); border: 1px solid var(--bdr); border-radius: 6px;
+            padding: 12px 14px; margin-bottom: 16px; font-size: 12px; color: var(--t2); line-height: 1.6;
+        }
+        .explain strong { color: var(--t0); }
+        .explain em { color: var(--blue); font-style: normal; font-weight: 600; }
+
+        /* PROB BARS */
+        .p-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .p-label { width: 80px; font-size: 12px; color: var(--t2); text-align: right; flex-shrink: 0; }
+        .p-track { flex: 1; height: 8px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
+        .p-fill { height: 100%; border-radius: 4px; transition: width .6s ease; }
+        .p-num { width: 48px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; text-align: right; flex-shrink: 0; }
+
+        /* ODDS TABLE */
+        .odds-tbl { width: 100%; border-collapse: collapse; }
+        .odds-tbl th { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--t3); padding: 0 8px 10px; text-align: center; }
+        .odds-tbl th:first-child { text-align: left; }
+        .odds-tbl td { padding: 8px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; text-align: center; border-top: 1px solid var(--bdr); }
+        .odds-tbl td:first-child { text-align: left; font-family: 'Inter', sans-serif; font-weight: 500; color: var(--t1); font-size: 12px; }
+        .odds-tbl .best { color: var(--green); }
+
+        /* PLAN BOX */
+        .plan-box {
+            background: linear-gradient(135deg, rgba(34,197,94,.06), rgba(59,130,246,.06));
+            border: 1px solid rgba(34,197,94,.2); border-radius: var(--r);
+            padding: 16px; margin-bottom: 12px;
+        }
+        .plan-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--bdr); }
+        .plan-row:last-child { border-bottom: none; }
+        .plan-row .pr-l { font-size: 12px; color: var(--t1); }
+        .plan-row .pr-r { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; }
+
+        /* BET LINE */
+        .bet-line {
+            background: var(--bg2); border: 1px solid var(--bdr); border-radius: 6px;
+            padding: 12px 14px; margin-bottom: 8px;
+        }
+        .bet-line-top { display: flex; justify-content: space-between; align-items: center; }
+        .bet-line .bl-name { font-weight: 700; font-size: 14px; }
+        .bet-line .bl-odds { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--t1); }
+        .bet-line .bl-meta { font-size: 11px; color: var(--t3); margin-top: 4px; }
+        .bet-line-bottom { display: flex; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--bdr); }
+        .bet-line .bl-stake { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; color: var(--green); }
+        .bet-line .bl-profit { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--t2); }
+
+        .tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+        .tag { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; letter-spacing: .3px; }
+        .t-alta { background: rgba(34,197,94,.1); color: var(--green); }
+        .t-media { background: rgba(245,158,11,.1); color: var(--amber); }
+        .t-baja { background: rgba(59,130,246,.1); color: var(--blue); }
+        .t-kelly { background: rgba(168,85,247,.1); color: #a855f7; }
+        .t-edge { background: rgba(34,197,94,.1); color: var(--green); }
+        .t-bookie { background: var(--bg3); color: var(--t2); }
+
+        /* QUICK BET */
+        .qb { background: var(--bg1); border: 1px solid var(--bdr); border-radius: var(--r); padding: 20px 24px; margin-bottom: 24px; }
+        .qb-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--t3); margin-bottom: 4px; }
+        .qb-desc { font-size: 12px; color: var(--t2); margin-bottom: 14px; }
+        .qb-grid { display: grid; grid-template-columns: 1.5fr repeat(4, 1fr) auto; gap: 10px; align-items: end; }
+        .qb-result { display: none; margin-top: 16px; }
+        .qb-result.show { display: block; }
+        .qb-metrics { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; background: var(--bg2); border: 1px solid var(--bdr); border-radius: 6px; padding: 16px; }
+        .qm-item .qm-l { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--t3); margin-bottom: 4px; }
+        .qm-item .qm-v { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; }
+        .qm-item .qm-s { font-size: 11px; color: var(--t2); margin-top: 2px; }
+
+        /* CS GRID */
+        .cs-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+        .cs-item { background: var(--bg2); border: 1px solid var(--bdr); border-radius: 6px; padding: 10px; text-align: center; }
+        .cs-score { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; }
+        .cs-pct { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--green); margin-top: 2px; }
+
+        .empty { text-align: center; padding: 32px; color: var(--t3); font-size: 13px; }
+        .hidden { display: none !important; }
+        .loading { opacity: .3; pointer-events: none; }
+
+        /* GRID LAYOUTS */
+        .g3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+        .g21 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+        @media (max-width: 900px) {
+            .search-grid, .qb-grid { grid-template-columns: 1fr 1fr; }
+            .g3, .g21 { grid-template-columns: 1fr; }
+            .steps { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="top">
+        <div class="top-brand">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Sports Edge
+        </div>
+        <div class="top-right">
+            <span><span class="dot"></span> <span id="stOdds">{{ odds_status }}</span></span>
+            <span>|</span>
+            <span><span class="dot"></span> <span id="stStats">{{ stats_status }}</span></span>
+        </div>
+    </div>
+
+    <div class="wrap">
+        <!-- QUE HACE ESTO -->
+        <div class="intro">
+            <h2>Como funciona</h2>
+            <p>Este sistema analiza partidos de futbol usando estadisticas reales y cuotas de casas de apuestas para encontrar <strong>apuestas con ventaja matematica</strong> (value bets). No adivina — calcula.</p>
+            <div class="steps">
+                <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Elegi el partido</strong> — Selecciona la liga y escribe los nombres de los equipos</div></div>
+                <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Analiza</strong> — El sistema trae stats reales, calcula probabilidades y compara con cuotas</div></div>
+                <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Decidi</strong> — Si hay value bets, te dice exactamente cuanto apostar con tu presupuesto</div></div>
+            </div>
+        </div>
+
+        <!-- BUSCADOR -->
+        <div class="search">
+            <form id="fAnalyze" class="search-grid">
+                <div class="field">
+                    <label>Liga</label>
+                    <select id="league">
+                        {% for l in leagues %}
+                        <option value="{{ l }}" {{ 'selected' if l=='Premier League' else '' }}>{{ l }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Equipo local</label>
+                    <input id="home" placeholder="Ej: Arsenal" required>
+                    <div class="hint">El que juega en casa</div>
+                </div>
+                <div class="field">
+                    <label>Equipo visitante</label>
+                    <input id="away" placeholder="Ej: Chelsea" required>
+                    <div class="hint">El que viaja</div>
+                </div>
+                <div class="field">
+                    <label>Tu presupuesto</label>
+                    <input id="budget" type="number" value="100" min="1">
+                    <div class="hint">Cuanto podes apostar</div>
+                </div>
+                <button type="submit" class="btn" id="btnGo">Analizar partido</button>
+            </form>
+        </div>
+
+        <!-- PEGAR CUOTAS (1xBet / Tu Casino) -->
+        <div class="search" id="manualSection">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+                <div>
+                    <h3 style="font-size:15px;font-weight:700">Pegar cuotas de 1xBet / Mi Casino</h3>
+                    <p style="font-size:12px;color:var(--t2);margin-top:4px">Copia las cuotas de tu pantalla y pegas aqui. Funciona con cualquier casa de apuestas.</p>
+                </div>
+                <div style="display:flex;gap:8px">
+                    <button type="button" class="btn" style="background:var(--bg3);font-size:12px;height:34px;padding:0 16px" onclick="addMatchRow()">+ Partido</button>
+                </div>
+            </div>
+            <div id="manualMatches"></div>
+            <div style="display:flex;gap:12px;margin-top:16px;align-items:end">
+                <div class="field" style="width:140px">
+                    <label>Presupuesto</label>
+                    <input id="mBudget" type="number" value="100" min="1">
+                </div>
+                <button type="button" class="btn" onclick="analyzeManual()" id="btnManual">Analizar todas las cuotas</button>
+            </div>
+        </div>
+
+        <!-- RESULTADOS MANUALES -->
+        <div id="manualResults" class="hidden"></div>
+
+        <!-- BET FINDER - DONDE APOSTAR -->
+        <div class="search" id="betFinderSection" style="margin-top:24px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+                <div>
+                    <h3 style="font-size:15px;font-weight:700">Encuentra donde apostar</h3>
+                    <p style="font-size:12px;color:var(--t2);margin-top:4px">Compara cuotas de todas las casas. Te digo en cual te dan mas plata.</p>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                    <button type="button" class="btn" style="background:var(--bg3);font-size:12px;height:34px;padding:0 16px" onclick="loadBetFinder('today')">Hoy</button>
+                    <button type="button" class="btn" style="background:var(--blue);font-size:12px;height:34px;padding:0 16px" onclick="loadBetFinder('tomorrow')">Mañana</button>
+                    <input type="date" id="finderDate" style="height:34px;padding:0 10px;background:var(--bg);border:1px solid var(--bdr);border-radius:6px;color:var(--t0);font-family:inherit;font-size:13px">
+                    <button type="button" class="btn" style="font-size:12px;height:34px;padding:0 16px" onclick="loadBetFinder('custom')">Buscar</button>
+                </div>
+            </div>
+            <div id="betFinderLoading" style="display:none;text-align:center;padding:30px;color:var(--t2)">Cargando 500+ cuotas de 30+ casas...</div>
+            <div id="betFinderResults"></div>
+        </div>
+
+        <!-- BANNER PARTIDO -->
+        <div class="match-banner" id="banner">
+            <div class="league" id="bLeague"></div>
+            <div class="teams" id="bTeams"></div>
+            <div class="meta" id="bMeta"></div>
+        </div>
+
+        <!-- RESULTADOS -->
+        <div id="results" class="hidden">
+            <!-- Explicacion del modelo -->
+            <div class="results-title">Lo que el sistema encontro</div>
+
+            <div class="explain" id="explainModel"></div>
+
+            <!-- Stats rapidas -->
+            <div id="statsStrip" class="g3" style="margin-bottom:20px"></div>
+
+            <!-- 3 columnas: Probabilidades | Monte Carlo | Cuotas -->
+            <div class="g3" id="mainGrid"></div>
+
+            <!-- Value Bets + Plan -->
+            <div class="g21" id="vbGrid"></div>
+
+            <!-- Marcadores exactos -->
+            <div class="card" id="csCard">
+                <div class="card-h">Marcadores mas probables</div>
+                <div class="card-b"><div class="cs-grid" id="csGrid"></div></div>
+            </div>
+        </div>
+
+        <!-- QUICK BET -->
+        <div class="qb">
+            <div class="qb-title">Quick Bet — Analizar una apuesta suelta</div>
+            <div class="qb-desc">Tenes una cuota en mente? Pone los datos y te digo si vale la pena.</div>
+            <form id="fQB" class="qb-grid">
+                <div class="field"><label>Partido</label><input id="qMatch" value="Arsenal vs Chelsea"></div>
+                <div class="field"><label>Cuota</label><input id="qOdds" type="number" value="2.10" step="0.01" min="1.01"></div>
+                <div class="field"><label>Probabilidad %</label><input id="qProb" type="number" value="55" step="0.1"></div>
+                <div class="field"><label>Bankroll $</label><input id="qBudget" type="number" value="100"></div>
+                <div class="field"><label>Casa de apuestas</label><input id="qBookie" value="Bet365"></div>
+                <button type="submit" class="btn">Calcular</button>
+            </form>
+            <div class="qb-result" id="qbResult"></div>
+        </div>
+    </div>
+
+    <script>
+        // ANALYZE
+        document.getElementById('fAnalyze').addEventListener('submit', async e => {
+            e.preventDefault();
+            const btn = document.getElementById('btnGo');
+            btn.innerHTML = 'Calculando...'; btn.disabled = true;
+            document.getElementById('results').classList.add('loading');
+            try {
+                const r = await fetch('/api/analyze', { method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ home_team: document.getElementById('home').value, away_team: document.getElementById('away').value,
+                        league: document.getElementById('league').value, budget: +document.getElementById('budget').value })});
+                const d = await r.json();
+                render(d);
+                document.getElementById('results').classList.remove('hidden');
+            } catch(e) { alert('Error: '+e.message); }
+            finally { btn.innerHTML = 'Analizar partido'; btn.disabled = false; document.getElementById('results').classList.remove('loading'); }
+        });
+
+        function render(d) {
+            const h = d.stats.home, a = d.stats.away;
+            const p = d.poisson, mc = d.monte_carlo;
+
+            // Banner
+            document.getElementById('banner').classList.add('show');
+            document.getElementById('bLeague').textContent = d.match.league;
+            document.getElementById('bTeams').innerHTML = `${d.match.home} <span>vs</span> ${d.match.away}`;
+            document.getElementById('bMeta').innerHTML = `
+                <span>Lambda local: ${d.stats.home_lambda} (espera ${d.stats.home_lambda} goles)</span>
+                <span>Lambda visitante: ${d.stats.away_lambda} (espera ${d.stats.away_lambda} goles)</span>
+                <span>Datos: ${d.stats.source}</span>`;
+
+            // Explain
+            document.getElementById('explainModel').innerHTML = `
+                <strong>Que significa este analisis:</strong> El modelo Poisson estima la probabilidad de cada resultado basado en el ataque del local
+                ${h ? `(${h.team_name} promedia <em>${h.avg_goals_for} goles por partido</em>)` : ''} 
+                contra la defensa del visitante
+                ${a ? `(${a.team_name} recibe en promedio <em>${a.avg_goals_against} goles por partido</em>)` : ''}.
+                Luego compara esas probabilidades con las cuotas reales de las casas de apuestas para encontrar donde hay <strong>valor</strong>.`;
+
+            // Stats strip
+            document.getElementById('statsStrip').innerHTML = `
+                ${h ? statBox(`#${h.position} ${h.team_name}`, `${h.played}PJ`, `${h.wins}G ${h.draws}E ${h.losses}P | GF:${h.goals_for} GC:${h.goals_against}`) : ''}
+                ${statBox('Goles local/prom', h ? h.avg_goals_for : '-', h ? 'Promedio de goles que mete en casa' : '')}
+                ${statBox('Goles visit/prom', a ? a.avg_goals_for : '-', a ? 'Promedio de goles que mete afuera' : '')}
+                ${a ? statBox(`#${a.position} ${a.team_name}`, `${a.played}PJ`, `${a.wins}G ${a.draws}E ${a.losses}P | GF:${a.goals_for} GC:${a.goals_against}`) : ''}`;
+
+            // Main grid
+            const colors = { home:'#22c55e', draw:'#f59e0b', away:'#ef4444' };
+            document.getElementById('mainGrid').innerHTML = `
+                <div class="card"><div class="card-h">Probabilidades del modelo</div><div class="card-body card-b">
+                    <div class="explain" style="margin-bottom:12px">Segun los datos, que tan probable es cada resultado:</div>
+                    ${probBar('Gana local', p.home_win, colors.home)}
+                    ${probBar('Empate', p.draw, colors.draw)}
+                    ${probBar('Gana visitante', p.away_win, colors.away)}
+                    <div style="height:10px"></div>
+                    ${probBar('Mas de 1.5 goles', p.over_15, '#6366f1')}
+                    ${probBar('Mas de 2.5 goles', p.over_25, '#8b5cf6')}
+                    ${probBar('Mas de 3.5 goles', p.over_35, '#a855f7')}
+                    ${probBar('Ambos meten gol', p.btts, '#06b6d4')}
+                </div></div>
+                <div class="card"><div class="card-h">Simulacion <span class="tag" style="background:rgba(168,85,247,.1);color:#a855f7">10,000 partidos</span></div><div class="card-b">
+                    <div class="explain" style="margin-bottom:12px">El sistema simula <em>10,000 partidos virtuales</em> para confirmar las probabilidades:</div>
+                    ${probBar('Gana local', mc.home_win, colors.home)}
+                    ${probBar('Empate', mc.draw, colors.draw)}
+                    ${probBar('Gana visitante', mc.away_win, colors.away)}
+                    <div style="height:10px"></div>
+                    <div style="font-size:12px;color:var(--t2);line-height:2.2">
+                        <div>Promedio de goles total: <strong style="color:var(--t0);font-family:'JetBrains Mono',monospace">${mc.avg_total_goals}</strong></div>
+                        <div>Promedio goles local: <strong style="font-family:'JetBrains Mono',monospace">${mc.avg_home_goals}</strong></div>
+                        <div>Promedio goles visitante: <strong style="font-family:'JetBrains Mono',monospace">${mc.avg_away_goals}</strong></div>
+                    </div>
+                </div></div>
+                <div class="card"><div class="card-h">Cuotas reales <span class="tag" style="background:rgba(245,158,11,.1);color:var(--amber)">${d.odds.source}</span></div><div class="card-b">
+                    <div class="explain" style="margin-bottom:12px">Esto es lo que pagan las casas. El <em>verde</em> es la mejor cuota para cada opcion:</div>
+                    ${renderOddsTable(d.odds)}
+                </div></div>`;
+
+            // Value bets + Plan
+            const vbs = d.value_bets || [];
+            const bp = d.budget_plan;
+            document.getElementById('vbGrid').innerHTML = `
+                <div class="card"><div class="card-h">Apuestas con ventaja <span class="tag" style="background:rgba(34,197,94,.1);color:var(--green)">${vbs.length} encontradas</span></div><div class="card-b">
+                    ${vbs.length ? `
+                        <div class="explain" style="margin-bottom:12px">
+                            Estas apuestas tienen <strong>ventaja matematica</strong>: el modelo dice que la probabilidad real es mayor a lo que la cuota implica.
+                            La casa te esta pagando de mas.
+                        </div>
+                        ${vbs.map(vb => betCard(vb)).join('')}
+                    ` : '<div class="empty">No hay value bets para este partido. Las cuotas no ofrecen ventaja suficiente.</div>'}
+                </div></div>
+                <div class="card"><div class="card-h">Cuanto apostar</div><div class="card-b">
+                    ${bp ? `
+                        <div class="explain" style="margin-bottom:12px">
+                            Con <strong>$${bp.bankroll}</strong> de bankroll, el sistema recomienda apostar en <strong>${bp.num_bets} apuestas</strong>
+                            usando <em>Kelly Criterion</em> (fraccion segura). Total expuesto: <strong>$${bp.total_staked}</strong>.
+                            Si ganas todas, ganas <strong style="color:var(--green)">+$${bp.total_potential_profit}</strong>.
+                        </div>
+                        ${bp.bets.map(b => planLine(b)).join('')}
+                        <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--bdr);display:flex;justify-content:space-between">
+                            <span style="font-size:12px;color:var(--t2)">Total a apostar</span>
+                            <span style="font-family:'JetBrains Mono',monospace;font-weight:700">$${bp.total_staked}</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;margin-top:4px">
+                            <span style="font-size:12px;color:var(--t2)">Ganancia si ganas todas</span>
+                            <span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--green)">+$${bp.total_potential_profit}</span>
+                        </div>
+                        ${bp.warnings.length ? `<div style="margin-top:12px;padding:10px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:6px;font-size:12px;color:var(--amber)">${bp.warnings.join('<br>')}</div>` : ''}
+                    ` : '<div class="empty">Sin apuestas recomendadas para este partido</div>'}
+                </div></div>`;
+
+            // Correct scores
+            document.getElementById('csGrid').innerHTML = Object.entries(p.correct_scores||{}).slice(0,10).map(([s,v]) =>
+                `<div class="cs-item"><div class="cs-score">${s}</div><div class="cs-pct">${(v*100).toFixed(1)}%</div></div>`).join('');
+        }
+
+        function statBox(label, val, sub) {
+            return `<div class="card"><div class="card-b" style="text-align:center">
+                <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);margin-bottom:4px">${label}</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700">${val}</div>
+                <div style="font-size:11px;color:var(--t2);margin-top:2px">${sub}</div>
+            </div></div>`;
+        }
+
+        function probBar(label, val, color) {
+            return `<div class="p-row">
+                <div class="p-label">${label}</div>
+                <div class="p-track"><div class="p-fill" style="width:${val}%;background:${color}"></div></div>
+                <div class="p-num" style="color:${color}">${val}%</div>
+            </div>`;
+        }
+
+        function renderOddsTable(odds) {
+            if (!odds.best || !Object.keys(odds.best).length) return '<div class="empty">Sin cuotas</div>';
+            const all = odds.all_bookmakers || {};
+            const best = odds.best;
+            const keys = Object.keys(best);
+            let rows = '';
+            for (const [bm, mkts] of Object.entries(all)) {
+                const h2h = mkts.h2h || {};
+                const vals = Object.values(h2h);
+                const cells = vals.map((v, i) => `<td class="${v === best[keys[i]] ? 'best' : ''}">${typeof v==='number' ? v.toFixed(2) : v}</td>`).join('');
+                rows += `<tr><td>${bm}</td>${cells}</tr>`;
+            }
+            const headers = keys.map(k => `<th>${k}</th>`).join('');
+            return `<table class="odds-tbl"><thead><tr><th>Casa</th>${headers}</tr></thead><tbody>${rows}</tbody></table>`;
+        }
+
+        function betCard(vb) {
+            return `<div class="bet-line">
+                <div class="bet-line-top">
+                    <div>
+                        <div class="bl-name">${vb.selection}</div>
+                        <div class="bl-meta">${vb.match || 'N/A'}</div>
+                        <div class="tags">
+                            <span class="tag t-${vb.confidence.toLowerCase()}">${vb.confidence}</span>
+                            <span class="tag t-edge">Edge +${vb.edge}%</span>
+                            <span class="tag t-kelly">Kelly ${vb.kelly_pct}%</span>
+                            <span class="tag t-bookie">${vb.bookmaker}</span>
+                        </div>
+                    </div>
+                    <div style="text-align:right">
+                        <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700">@${vb.odds}</div>
+                        <div style="font-size:11px;color:var(--t2)">Prob real: ${vb.probability}%</div>
+                        <div style="font-size:11px;color:var(--green)">Valor esperado: +${vb.expected_value}%</div>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function planLine(b) {
+            return `<div class="bet-line">
+                <div class="bet-line-top">
+                    <div>
+                        <div class="bl-name">${b.selection} <span class="bl-odds">@ ${b.odds}</span></div>
+                        <div class="bl-meta">${b.match} · ${b.bookmaker}</div>
+                    </div>
+                    <div style="text-align:right">
+                        <div class="bl-stake">$${b.stake}</div>
+                        <div class="bl-profit">Ganancia: +$${b.potential_profit}</div>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        // QUICK BET
+        document.getElementById('fQB').addEventListener('submit', async e => {
+            e.preventDefault();
+            try {
+                const r = await fetch('/api/quick-bet', { method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ match: document.getElementById('qMatch').value, market:'1X2', selection:'home',
+                        odds: +document.getElementById('qOdds').value, probability: +document.getElementById('qProb').value,
+                        budget: +document.getElementById('qBudget').value, bookmaker: document.getElementById('qBookie').value })});
+                const d = await r.json();
+                const el = document.getElementById('qbResult');
+                el.classList.add('show');
+                el.innerHTML = `
+                    <div class="explain" style="margin-bottom:0">
+                        <strong>${d.match}</strong> — ${d.selection} @ ${d.odds} en ${d.bookmaker}<br>
+                        ${d.recommendation}
+                    </div>
+                    <div class="qb-metrics">
+                        <div class="qm-item"><div class="qm-l">Edge</div><div class="qm-v" style="color:${d.edge>0?'var(--green)':'var(--red)'}">${d.edge>0?'+':''}${d.edge}%</div><div class="qm-s">${d.edge>0?'Hay ventaja':'No hay ventaja'}</div></div>
+                        <div class="qm-item"><div class="qm-l">Kelly</div><div class="qm-v">${d.kelly_adj}%</div><div class="qm-s">Fraccion segura</div></div>
+                        <div class="qm-item"><div class="qm-l">Stake</div><div class="qm-v" style="color:var(--green)">$${d.recommended_stake}</div><div class="qm-s">${d.bankroll_used_pct}% de tu bankroll</div></div>
+                        <div class="qm-item"><div class="qm-l">Si ganas</div><div class="qm-v" style="color:var(--green)">+$${d.potential_profit}</div><div class="qm-s">Ganancia neta</div></div>
+                        <div class="qm-item"><div class="qm-l">Veredicto</div><div class="qm-v" style="font-size:14px;color:${d.edge>8?'var(--green)':d.edge>3?'var(--amber)':'var(--red)'}">${d.recommendation}</div></div>
+                    </div>`;
+            } catch(e) { alert('Error: '+e.message); }
+        });
+
+        // ==============================
+        // MANUALLY PASTE ODDS (1xBet / Casino)
+        // ==============================
+        let matchCounter = 0;
+
+        function addMatchRow(home, away, odds1, oddsX, odds2, league) {
+            matchCounter++;
+            const id = matchCounter;
+            const container = document.getElementById('manualMatches');
+            const row = document.createElement('div');
+            row.id = 'mrow_' + id;
+            row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 80px 80px 80px 140px 40px;gap:8px;align-items:end;margin-bottom:10px;padding:12px;background:var(--bg2);border-radius:6px;border:1px solid var(--bdr)';
+            row.innerHTML = `
+                <div class="field"><label>Local</label><input class="mhome" value="${home||''}" placeholder="Ej: Bahia"></div>
+                <div class="field"><label>Visitante</label><input class="maway" value="${away||''}" placeholder="Ej: Remo"></div>
+                <div class="field"><label>1 (Local)</label><input class="m1" type="number" step="0.01" value="${odds1||''}" placeholder="1.45"></div>
+                <div class="field"><label>X (Empate)</label><input class="mx" type="number" step="0.01" value="${oddsX||''}" placeholder="4.35"></div>
+                <div class="field"><label>2 (Visitante)</label><input class="m2" type="number" step="0.01" value="${odds2||''}" placeholder="6.5"></div>
+                <div class="field"><label>Liga</label>
+                    <select class="mleague">
+                        <option value="">Sin liga</option>
+                        <option value="Premier League">Premier League</option>
+                        <option value="La Liga">La Liga</option>
+                        <option value="Serie A">Serie A</option>
+                        <option value="Bundesliga">Bundesliga</option>
+                        <option value="Ligue 1">Ligue 1</option>
+                        <option value="Argentina Liga Profesional">Argentina LPF</option>
+                        <option value="Brasil Serie A">Brasil Serie A</option>
+                        <option value="Liga MX">Liga MX</option>
+                        <option value="MLS">MLS</option>
+                        <option value="Champions League">Champions</option>
+                    </select>
+                </div>
+                <button type="button" onclick="removeMatchRow(${id})" style="background:var(--red);color:white;border:none;border-radius:4px;height:28px;cursor:pointer;font-size:14px" title="Eliminar">x</button>
+            `;
+            container.appendChild(row);
+            // Set league if provided
+            if (league) {
+                const sel = row.querySelector('.mleague');
+                for (const opt of sel.options) {
+                    if (opt.value === league) { opt.selected = true; break; }
+                }
+            }
+        }
+
+        function removeMatchRow(id) {
+            const el = document.getElementById('mrow_' + id);
+            if (el) el.remove();
+        }
+
+        // Agregar 2 filas vacias al inicio
+        addMatchRow();
+        addMatchRow();
+
+        async function analyzeManual() {
+            const rows = document.querySelectorAll('[id^="mrow_"]');
+            const matches = [];
+            for (const row of rows) {
+                const h = row.querySelector('.mhome').value.trim();
+                const a = row.querySelector('.maway').value.trim();
+                const o1 = row.querySelector('.m1').value;
+                const oX = row.querySelector('.mx').value;
+                const o2 = row.querySelector('.m2').value;
+                const lg = row.querySelector('.mleague').value;
+                if (!h || !a || !o1 || !oX || !o2) continue;
+                matches.push({
+                    home_team: h, away_team: a,
+                    odds_1x2: { "1": parseFloat(o1), "X": parseFloat(oX), "2": parseFloat(o2) },
+                    league: lg,
+                });
+            }
+            if (!matches.length) { alert('Pone al menos un partido con cuotas'); return; }
+
+            const budget = parseFloat(document.getElementById('mBudget').value) || 100;
+            document.getElementById('btnManual').disabled = true;
+            document.getElementById('btnManual').textContent = 'Analizando...';
+
+            try {
+                const r = await fetch('/api/analyze_manual', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ matches, budget })
+                });
+                const d = await r.json();
+                renderManualResults(d);
+            } catch(e) {
+                alert('Error: ' + e.message);
+            } finally {
+                document.getElementById('btnManual').disabled = false;
+                document.getElementById('btnManual').textContent = 'Analizar todas las cuotas';
+            }
+        }
+
+        function renderManualResults(data) {
+            const el = document.getElementById('manualResults');
+            el.classList.remove('hidden');
+            let html = '<div class="results-title">Resultados de tus cuotas</div>';
+
+            for (const m of data.matches) {
+                const vbHtml = m.value_bets.length > 0
+                    ? m.value_bets.map(v => `
+                        <div class="bet-line">
+                            <div class="bet-line-top">
+                                <div>
+                                    <div class="bl-name">${v.selection === 'home' ? m.home_team : v.selection === 'away' ? m.away_team : 'Empate'} @ ${v.odds}</div>
+                                    <div class="bl-meta">${m.home_team} vs ${m.away_team} · ${v.bookmaker}</div>
+                                    <div class="tags">
+                                        <span class="tag t-${v.confidence.toLowerCase()}">${v.confidence}</span>
+                                        <span class="tag t-edge">Edge +${v.expected_value}%</span>
+                                    </div>
+                                </div>
+                                <div style="text-align:right">
+                                    <div style="font-size:11px;color:var(--t2)">Prob real: ${v.probability}%</div>
+                                    <div style="font-size:11px;color:var(--green)">EV: +${v.expected_value}%</div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')
+                    : '<div style="color:var(--t3);font-size:13px;padding:8px">Sin value bet - cuotas justas</div>';
+
+                html += `
+                    <div class="card" style="margin-bottom:16px">
+                        <div class="card-h">
+                            <span>${m.home_team} vs ${m.away_team}</span>
+                            <span class="tag" style="background:${m.value_bets.length > 0 ? 'rgba(34,197,94,.12);color:var(--green)' : 'rgba(113,113,122,.12);color:var(--t2)'}">
+                                ${m.value_bets.length > 0 ? m.value_bets.length + ' VALUE BET' : 'SIN VALUE'}
+                            </span>
+                        </div>
+                        <div class="card-b">
+                            <div style="display:flex;gap:24px;margin-bottom:12px;font-size:12px;color:var(--t2)">
+                                <span>Stats: <strong style="color:var(--t0)">${m.stats_source}</strong></span>
+                                <span>Lambda: <strong style="color:var(--t0)">${m.home_lambda} / ${m.away_lambda}</strong></span>
+                                <span>Poisson: L<strong style="color:var(--t0)">${m.poisson.home_win}%</strong> E<strong style="color:var(--t0)">${m.poisson.draw}%</strong> V<strong style="color:var(--t0)">${m.poisson.away_win}%</strong></span>
+                            </div>
+                            <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);margin-bottom:8px">Tus cuotas vs Modelo</div>
+                            <div style="display:flex;gap:16px;margin-bottom:14px">
+                                <div style="background:var(--bg);padding:8px 14px;border-radius:6px;border:1px solid var(--bdr)">
+                                    <div style="font-size:10px;color:var(--t3)">1 (Local)</div>
+                                    <div style="font-family:'JetBrains Mono',monospace;font-weight:700">${m.odds_1x2['1']}</div>
+                                    <div style="font-size:10px;color:var(--t2)">Impl: ${(100/m.odds_1x2['1']).toFixed(1)}% | Real: ${m.poisson.home_win}%</div>
+                                </div>
+                                <div style="background:var(--bg);padding:8px 14px;border-radius:6px;border:1px solid var(--bdr)">
+                                    <div style="font-size:10px;color:var(--t3)">X (Empate)</div>
+                                    <div style="font-family:'JetBrains Mono',monospace;font-weight:700">${m.odds_1x2['X']}</div>
+                                    <div style="font-size:10px;color:var(--t2)">Impl: ${(100/m.odds_1x2['X']).toFixed(1)}% | Real: ${m.poisson.draw}%</div>
+                                </div>
+                                <div style="background:var(--bg);padding:8px 14px;border-radius:6px;border:1px solid var(--bdr)">
+                                    <div style="font-size:10px;color:var(--t3)">2 (Visitante)</div>
+                                    <div style="font-family:'JetBrains Mono',monospace;font-weight:700">${m.odds_1x2['2']}</div>
+                                    <div style="font-size:10px;color:var(--t2)">Impl: ${(100/m.odds_1x2['2']).toFixed(1)}% | Real: ${m.poisson.away_win}%</div>
+                                </div>
+                            </div>
+                            ${vbHtml}
+                        </div>
+                    </div>`;
+            }
+
+            // Budget plan
+            if (data.budget_plan) {
+                const bp = data.budget_plan;
+                html += `
+                    <div class="card">
+                        <div class="card-h">Plan de apuestas (${bp.num_bets} apuestas)</div>
+                        <div class="card-b">
+                            <div class="explain">
+                                Con <strong>$${bp.bankroll}</strong>, apostar <strong>$${bp.total_staked}</strong> en ${bp.num_bets} value bets.
+                                Si ganas todas: <strong style="color:var(--green)">+$${bp.total_potential_profit}</strong>
+                            </div>
+                            ${bp.bets.map(b => `
+                                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bdr);font-size:13px">
+                                    <span>${b.match} — <strong>${b.selection}</strong> @ ${b.odds} <span style="color:var(--t3)">(${b.bookmaker})</span></span>
+                                    <span style="font-family:'JetBrains Mono',monospace"><strong>$${b.stake}</strong> → <span style="color:var(--green)">+$${b.potential_profit}</span></span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>`;
+            }
+
+            el.innerHTML = html;
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // ==============================
+        // BET FINDER - DONDE APOSTAR
+        // ==============================
+        async function loadBetFinder(mode) {
+            let url = '/api/tomorrow';
+            if (mode === 'today') {
+                const today = new Date().toISOString().split('T')[0];
+                url = `/api/tomorrow?date=${today}`;
+            } else if (mode === 'custom') {
+                const d = document.getElementById('finderDate').value;
+                if (!d) { alert('Pone una fecha'); return; }
+                url = `/api/tomorrow?date=${d}`;
+            }
+            // 'tomorrow' uses default
+
+            document.getElementById('betFinderLoading').style.display = 'block';
+            document.getElementById('betFinderResults').innerHTML = '';
+
+            try {
+                const r = await fetch(url);
+                const d = await r.json();
+                renderBetFinder(d);
+            } catch(e) {
+                document.getElementById('betFinderResults').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
+            } finally {
+                document.getElementById('betFinderLoading').style.display = 'none';
+            }
+        }
+
+        function renderBetFinder(data) {
+            const el = document.getElementById('betFinderResults');
+            if (!data.matches || !data.matches.length) {
+                el.innerHTML = '<div class="empty">No hay partidos con cuotas para mañana</div>';
+                return;
+            }
+
+            // Group by league
+            const byLeague = {};
+            for (const m of data.matches) {
+                if (!byLeague[m.league]) byLeague[m.league] = [];
+                byLeague[m.league].push(m);
+            }
+
+            let html = `<div style="margin-bottom:12px;font-size:12px;color:var(--t2)">
+                ${data.total_matches} partidos mañana · ${Object.keys(byLeague).length} ligas · Cuotas de 30+ casas
+            </div>`;
+
+            for (const [league, matches] of Object.entries(byLeague)) {
+                html += `<div class="card" style="margin-bottom:16px">
+                    <div class="card-h" style="background:var(--bg2)">
+                        <span style="font-weight:700">${league}</span>
+                        <span class="tag" style="background:var(--blue);color:white">${matches.length} partidos</span>
+                    </div>
+                    <div class="card-b" style="padding:0">`;
+
+                for (const m of matches) {
+                    const kickoff = new Date(m.kickoff);
+                    const time = kickoff.toLocaleTimeString('es', {hour: '2-digit', minute: '2-digit'});
+
+                    // Build odds comparison
+                    let oddsCells = '';
+                    const selections = [
+                        {key: 'home', label: m.home_team, short: '1'},
+                        {key: 'draw', label: 'Empate', short: 'X'},
+                        {key: 'away', label: m.away_team, short: '2'},
+                    ];
+
+                    for (const sel of selections) {
+                        const b = m.best[sel.key];
+                        if (b) {
+                            oddsCells += `<div style="flex:1;text-align:center;padding:10px 8px;border-left:1px solid var(--bdr)">
+                                <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">${sel.short}</div>
+                                <div style="font-size:10px;color:var(--t2);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px" title="${sel.label}">${sel.label}</div>
+                                <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:800;color:var(--green)">${b.odds}</div>
+                                <div style="font-size:10px;color:var(--green);font-weight:600;margin-top:2px">${b.bookmaker}</div>
+                                <div style="font-size:9px;color:var(--t3);margin-top:2px">peor: ${b.worst_odds} (${b.worst_bookmaker})</div>
+                                <div style="font-size:9px;color:${b.spread_pct > 10 ? 'var(--amber)' : 'var(--t3)'};margin-top:1px">dif: +${b.spread_pct}%</div>
+                            </div>`;
+                        }
+                    }
+
+                    // Margin indicator
+                    const marginColor = m.margin < 5 ? 'var(--green)' : m.margin < 8 ? 'var(--amber)' : 'var(--red)';
+                    const marginLabel = m.margin < 5 ? 'Buen margen' : m.margin < 8 ? 'Margen normal' : 'Alto margen';
+
+                    html += `<div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--bdr)">
+                        <div style="width:80px;flex-shrink:0">
+                            <div style="font-size:10px;color:var(--t3)">HORA</div>
+                            <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700">${time}</div>
+                        </div>
+                        <div style="flex:1;display:flex">
+                            ${oddsCells}
+                        </div>
+                        <div style="width:80px;flex-shrink:0;text-align:right">
+                            <div style="font-size:10px;color:var(--t3)">MARGEN</div>
+                            <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:${marginColor}">${m.margin}%</div>
+                            <div style="font-size:9px;color:${marginColor}">${marginLabel}</div>
+                        </div>
+                    </div>`;
+                }
+                html += '</div></div>';
+            }
+
+            // VALUE PICKS SECTION
+            if (data.value_picks && data.value_picks.length > 0) {
+                html += `<div class="card" style="margin-top:20px;border:1px solid rgba(34,197,94,.3)">
+                    <div class="card-h" style="background:rgba(34,197,94,.08)">
+                        <span style="font-weight:700;color:var(--green)">Mejores apuestas individuales</span>
+                        <span class="tag" style="background:var(--green);color:white">${data.value_picks.length} picks</span>
+                    </div>
+                    <div class="card-b" style="padding:0">`;
+
+                for (const pick of data.value_picks) {
+                    const ratingColor = pick.rating === 'ALTA' ? 'var(--green)' : pick.rating === 'MEDIA' ? 'var(--amber)' : 'var(--red)';
+                    html += `<div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--bdr)">
+                        <div style="flex:1">
+                            <div style="font-weight:600;font-size:14px">${pick.match}</div>
+                            <div style="font-size:12px;color:var(--t2)">${pick.selection_name} en ${pick.bookmaker} · ${pick.league}</div>
+                        </div>
+                        <div style="text-align:right;margin-right:16px">
+                            <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:800;color:var(--green)">@ ${pick.odds}</div>
+                        </div>
+                        <div style="text-align:right;width:100px">
+                            <div style="font-size:11px;color:var(--t2)">Edge</div>
+                            <div style="font-family:'JetBrains Mono',monospace;font-weight:700;color:${ratingColor}">+${pick.edge}%</div>
+                        </div>
+                        <div style="width:60px;text-align:center">
+                            <span class="tag" style="background:${ratingColor}20;color:${ratingColor};font-size:10px;font-weight:700">${pick.rating}</span>
+                        </div>
+                    </div>`;
+                }
+                html += '</div></div>';
+            }
+
+            // COMBINADAS SECTION
+            if (data.combinadas && data.combinadas.length > 0) {
+                html += `<div class="card" style="margin-top:20px;border:1px solid rgba(245,158,11,.3)">
+                    <div class="card-h" style="background:rgba(245,158,11,.08)">
+                        <span style="font-weight:700;color:var(--amber)">Combinadas recomendadas</span>
+                        <span class="tag" style="background:var(--amber);color:white">${data.combinadas.length} opciones</span>
+                    </div>
+                    <div class="card-b">`;
+
+                for (const combo of data.combinadas) {
+                    const ratingColor = combo.rating === 'ALTA' ? 'var(--green)' : combo.rating === 'MEDIA' ? 'var(--amber)' : 'var(--red)';
+                    html += `<div style="background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;padding:16px;margin-bottom:12px">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                            <div>
+                                <span style="font-size:13px;font-weight:700">Combinada ${combo.size} folds</span>
+                                <span class="tag" style="background:${ratingColor}20;color:${ratingColor};margin-left:8px">${combo.rating}</span>
+                            </div>
+                            <div style="text-align:right">
+                                <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:800;color:var(--green)">@ ${combo.combined_odds}</div>
+                                <div style="font-size:10px;color:var(--t2)">Edge total: +${combo.total_edge}%</div>
+                            </div>
+                        </div>
+                        <div style="font-size:11px;color:var(--t3);margin-bottom:8px">Picks:</div>`;
+
+                    for (const p of combo.picks) {
+                        const selIcon = p.selection === 'home' ? '1' : p.selection === 'away' ? '2' : 'X';
+                        html += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bdr);font-size:13px">
+                            <span><strong>${selIcon}</strong> ${p.selection_name} <span style="color:var(--t3)">(${p.match})</span></span>
+                            <span style="font-family:'JetBrains Mono',monospace">@ ${p.odds} <span style="color:${ratingColor};font-size:11px">+${p.edge}%</span></span>
+                        </div>`;
+                    }
+
+                    html += `<div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+                        <div style="font-size:12px;color:var(--t2)">$10 apostados → ganas <strong style="color:var(--green)">$${combo.example_bet.potential_profit}</strong></div>
+                        <div style="font-size:11px;color:var(--t3)">${combo.picks.map(p => p.bookmaker).join(' / ')}</div>
+                    </div>
+                    </div>`;
+                }
+                html += '</div></div>';
+            }
+
+            el.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
